@@ -1971,4 +1971,40 @@
   <data name="TransportPathTip6" xml:space="preserve">
     <value>Удаленная папка XDRIVE</value>
   </data>
+  <data name="menuAddWarpServer" xml:space="preserve">
+    <value>Добавить Cloudflare WARP (бесплатно, даёт IPv6)</value>
+  </data>
+  <data name="menuWarpChainBefore" xml:space="preserve">
+    <value>Подключаться к серверу через WARP (для серверов только с IPv6)</value>
+  </data>
+  <data name="menuWarpChainAfter" xml:space="preserve">
+    <value>Выходить в интернет через WARP после сервера (добавляет IPv6)</value>
+  </data>
+  <data name="MsgWarpRegistering" xml:space="preserve">
+    <value>Создаю бесплатный аккаунт Cloudflare WARP...</value>
+  </data>
+  <data name="MsgWarpAdded" xml:space="preserve">
+    <value>Cloudflare WARP добавлен</value>
+  </data>
+  <data name="MsgWarpRegisterFailed" xml:space="preserve">
+    <value>Не удалось создать аккаунт Cloudflare WARP. Возможно, сайт Cloudflare недоступен из вашей сети: включите любой рабочий сервер и попробуйте ещё раз.</value>
+  </data>
+  <data name="MsgWarpChainUnsupported" xml:space="preserve">
+    <value>Этот тип сервера нельзя соединить с WARP</value>
+  </data>
+  <data name="menuWarpSelectEndpoint" xml:space="preserve">
+    <value>Подобрать лучший адрес WARP</value>
+  </data>
+  <data name="MsgWarpScanning" xml:space="preserve">
+    <value>Проверяю адреса Cloudflare WARP, это займёт несколько секунд...</value>
+  </data>
+  <data name="MsgWarpEndpointSelected" xml:space="preserve">
+    <value>Выбран адрес WARP: {0}:{1} ({2} мс)</value>
+  </data>
+  <data name="MsgWarpEndpointNotFound" xml:space="preserve">
+    <value>Ни один адрес WARP не ответил. Возможно, ваша сеть мешает WireGuard: используйте цепочку «сервер → WARP».</value>
+  </data>
+  <data name="MsgWarpNotWarpProfile" xml:space="preserve">
+    <value>Сначала выберите сервер Cloudflare WARP</value>
+  </data>
 </root>
