@@ -5669,7 +5669,7 @@ namespace ServiceLib.Resx {
                 return ResourceManager.GetString("XdriveService", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Add Cloudflare WARP (free, adds IPv6).
         /// </summary>
@@ -5678,7 +5678,7 @@ namespace ServiceLib.Resx {
                 return ResourceManager.GetString("menuAddWarpServer", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Connect to this server through WARP (for IPv6-only servers).
         /// </summary>
@@ -5687,7 +5687,7 @@ namespace ServiceLib.Resx {
                 return ResourceManager.GetString("menuWarpChainBefore", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Exit to the internet through WARP after this server (adds IPv6).
         /// </summary>
@@ -5696,7 +5696,7 @@ namespace ServiceLib.Resx {
                 return ResourceManager.GetString("menuWarpChainAfter", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Registering a free Cloudflare WARP account....
         /// </summary>
@@ -5705,7 +5705,7 @@ namespace ServiceLib.Resx {
                 return ResourceManager.GetString("MsgWarpRegistering", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Cloudflare WARP added.
         /// </summary>
@@ -5714,7 +5714,7 @@ namespace ServiceLib.Resx {
                 return ResourceManager.GetString("MsgWarpAdded", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Could not register Cloudflare WARP. The Cloudflare site may be unreachable from your network: start any working server and try again..
         /// </summary>
@@ -5723,7 +5723,7 @@ namespace ServiceLib.Resx {
                 return ResourceManager.GetString("MsgWarpRegisterFailed", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to This server type cannot be combined with WARP.
         /// </summary>
@@ -5732,7 +5732,7 @@ namespace ServiceLib.Resx {
                 return ResourceManager.GetString("MsgWarpChainUnsupported", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Find the best WARP address.
         /// </summary>
@@ -5741,7 +5741,7 @@ namespace ServiceLib.Resx {
                 return ResourceManager.GetString("menuWarpSelectEndpoint", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Checking Cloudflare WARP addresses, this takes a few seconds....
         /// </summary>
@@ -5750,7 +5750,7 @@ namespace ServiceLib.Resx {
                 return ResourceManager.GetString("MsgWarpScanning", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to WARP address chosen: {0}:{1} ({2} ms).
         /// </summary>
@@ -5759,7 +5759,7 @@ namespace ServiceLib.Resx {
                 return ResourceManager.GetString("MsgWarpEndpointSelected", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to No WARP address answered. Your network may block WireGuard; use the chain 'server → WARP' instead..
         /// </summary>
@@ -5768,7 +5768,7 @@ namespace ServiceLib.Resx {
                 return ResourceManager.GetString("MsgWarpEndpointNotFound", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Select the Cloudflare WARP server first.
         /// </summary>
