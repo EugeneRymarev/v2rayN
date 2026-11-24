@@ -210,6 +210,11 @@
                             <MenuItem x:Name="menuGenGroupAllServer" Header="{x:Static resx:ResUI.menuAllServers}" />
                             <MenuItem x:Name="menuGenGroupRegionServer" Header="{x:Static resx:ResUI.menuGenRegionGroup}" />
                         </MenuItem>
+                        <MenuItem Header="Cloudflare WARP (IPv6)">
+                            <MenuItem x:Name="menuWarpChainBefore" Header="{x:Static resx:ResUI.menuWarpChainBefore}" />
+                            <MenuItem x:Name="menuWarpChainAfter" Header="{x:Static resx:ResUI.menuWarpChainAfter}" />
+                            <MenuItem x:Name="menuWarpSelectEndpoint" Header="{x:Static resx:ResUI.menuWarpSelectEndpoint}" />
+                        </MenuItem>
                     </ContextMenu>
                 </DataGrid.ContextMenu>
 

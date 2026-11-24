@@ -5669,5 +5669,113 @@ namespace ServiceLib.Resx {
                 return ResourceManager.GetString("XdriveService", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Add Cloudflare WARP (free, adds IPv6).
+        /// </summary>
+        public static string menuAddWarpServer {
+            get {
+                return ResourceManager.GetString("menuAddWarpServer", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Connect to this server through WARP (for IPv6-only servers).
+        /// </summary>
+        public static string menuWarpChainBefore {
+            get {
+                return ResourceManager.GetString("menuWarpChainBefore", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Exit to the internet through WARP after this server (adds IPv6).
+        /// </summary>
+        public static string menuWarpChainAfter {
+            get {
+                return ResourceManager.GetString("menuWarpChainAfter", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Registering a free Cloudflare WARP account....
+        /// </summary>
+        public static string MsgWarpRegistering {
+            get {
+                return ResourceManager.GetString("MsgWarpRegistering", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Cloudflare WARP added.
+        /// </summary>
+        public static string MsgWarpAdded {
+            get {
+                return ResourceManager.GetString("MsgWarpAdded", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Could not register Cloudflare WARP. The Cloudflare site may be unreachable from your network: start any working server and try again..
+        /// </summary>
+        public static string MsgWarpRegisterFailed {
+            get {
+                return ResourceManager.GetString("MsgWarpRegisterFailed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to This server type cannot be combined with WARP.
+        /// </summary>
+        public static string MsgWarpChainUnsupported {
+            get {
+                return ResourceManager.GetString("MsgWarpChainUnsupported", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Find the best WARP address.
+        /// </summary>
+        public static string menuWarpSelectEndpoint {
+            get {
+                return ResourceManager.GetString("menuWarpSelectEndpoint", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Checking Cloudflare WARP addresses, this takes a few seconds....
+        /// </summary>
+        public static string MsgWarpScanning {
+            get {
+                return ResourceManager.GetString("MsgWarpScanning", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to WARP address chosen: {0}:{1} ({2} ms).
+        /// </summary>
+        public static string MsgWarpEndpointSelected {
+            get {
+                return ResourceManager.GetString("MsgWarpEndpointSelected", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to No WARP address answered. Your network may block WireGuard; use the chain 'server → WARP' instead..
+        /// </summary>
+        public static string MsgWarpEndpointNotFound {
+            get {
+                return ResourceManager.GetString("MsgWarpEndpointNotFound", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Select the Cloudflare WARP server first.
+        /// </summary>
+        public static string MsgWarpNotWarpProfile {
+            get {
+                return ResourceManager.GetString("MsgWarpNotWarpProfile", resourceCulture);
+            }
+        }
     }
 }

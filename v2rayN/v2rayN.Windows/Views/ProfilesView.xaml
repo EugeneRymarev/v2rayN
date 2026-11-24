@@ -259,6 +259,20 @@
                                 Height="{StaticResource MenuItemHeight}"
                                 Header="{x:Static resx:ResUI.menuGenRegionGroup}" />
                         </MenuItem>
+                        <MenuItem Header="Cloudflare WARP (IPv6)">
+                            <MenuItem
+                                x:Name="menuWarpChainBefore"
+                                Height="{StaticResource MenuItemHeight}"
+                                Header="{x:Static resx:ResUI.menuWarpChainBefore}" />
+                            <MenuItem
+                                x:Name="menuWarpChainAfter"
+                                Height="{StaticResource MenuItemHeight}"
+                                Header="{x:Static resx:ResUI.menuWarpChainAfter}" />
+                            <MenuItem
+                                x:Name="menuWarpSelectEndpoint"
+                                Height="{StaticResource MenuItemHeight}"
+                                Header="{x:Static resx:ResUI.menuWarpSelectEndpoint}" />
+                        </MenuItem>
                     </ContextMenu>
                 </DataGrid.ContextMenu>
                 <DataGrid.Resources>
