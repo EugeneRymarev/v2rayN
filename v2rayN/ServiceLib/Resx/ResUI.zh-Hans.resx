@@ -1981,29 +1981,11 @@
   <data name="MsgCheckUpdateViaGitRefsFailed" xml:space="preserve">
     <value>{0} 的 git 引用不可用</value>
   </data>
-  <data name="menuAddWarpServer" xml:space="preserve">
-    <value>添加 Cloudflare WARP（免费，提供 IPv6）</value>
-  </data>
-  <data name="menuWarpChainBefore" xml:space="preserve">
-    <value>通过 WARP 连接此服务器（用于仅 IPv6 的服务器）</value>
-  </data>
-  <data name="menuWarpChainAfter" xml:space="preserve">
-    <value>经此服务器后通过 WARP 出口（提供 IPv6）</value>
-  </data>
   <data name="MsgWarpRegistering" xml:space="preserve">
     <value>正在注册免费的 Cloudflare WARP 账户...</value>
   </data>
-  <data name="MsgWarpAdded" xml:space="preserve">
-    <value>已添加 Cloudflare WARP</value>
-  </data>
   <data name="MsgWarpRegisterFailed" xml:space="preserve">
     <value>无法注册 Cloudflare WARP。可能无法从你的网络访问 Cloudflare：请先启用任意可用服务器后重试。</value>
-  </data>
-  <data name="MsgWarpChainUnsupported" xml:space="preserve">
-    <value>此类型服务器无法与 WARP 组合</value>
-  </data>
-  <data name="menuWarpSelectEndpoint" xml:space="preserve">
-    <value>选择最佳 WARP 地址</value>
   </data>
   <data name="MsgWarpScanning" xml:space="preserve">
     <value>正在检测 Cloudflare WARP 地址，需要几秒钟...</value>
@@ -2014,7 +1996,40 @@
   <data name="MsgWarpEndpointNotFound" xml:space="preserve">
     <value>没有 WARP 地址响应。你的网络可能屏蔽了 WireGuard：请改用“服务器 → WARP”链。</value>
   </data>
-  <data name="MsgWarpNotWarpProfile" xml:space="preserve">
-    <value>请先选择 Cloudflare WARP 服务器</value>
+  <data name="TbWarpSettings" xml:space="preserve">
+    <value>WARP (IPv6)</value>
+  </data>
+  <data name="TbWarpMode" xml:space="preserve">
+    <value>通过 Cloudflare WARP 连接服务器</value>
+  </data>
+  <data name="TbWarpModeOff" xml:space="preserve">
+    <value>关闭</value>
+  </data>
+  <data name="TbWarpModeIpv6" xml:space="preserve">
+    <value>仅限 IPv6 地址的服务器</value>
+  </data>
+  <data name="TbWarpModeAll" xml:space="preserve">
+    <value>所有服务器</value>
+  </data>
+  <data name="TbWarpTips" xml:space="preserve">
+    <value>WARP 是 Cloudflare 的免费网络。v2rayN 先通过 IPv4 连接 WARP，再经由它连接你的服务器，因此即使运营商不支持 IPv6，也能使用 IPv6 地址的服务器。</value>
+  </data>
+  <data name="TbWarpAccount" xml:space="preserve">
+    <value>WARP 账户</value>
+  </data>
+  <data name="TbWarpNoAccount" xml:space="preserve">
+    <value>尚未创建</value>
+  </data>
+  <data name="BtnWarpRegister" xml:space="preserve">
+    <value>创建 WARP 账户</value>
+  </data>
+  <data name="BtnWarpSelectEndpoint" xml:space="preserve">
+    <value>选择最佳 WARP 地址</value>
+  </data>
+  <data name="MsgWarpAccountCreated" xml:space="preserve">
+    <value>已创建 WARP 账户</value>
+  </data>
+  <data name="MsgWarpNoAccount" xml:space="preserve">
+    <value>请先创建 WARP 账户</value>
   </data>
 </root>

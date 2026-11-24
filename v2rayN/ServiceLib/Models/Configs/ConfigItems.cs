@@ -279,3 +279,20 @@ public class HappyEyeballs4RayItem
     public int? Interleave { get; set; }
     public int? MaxConcurrentTry { get; set; }
 }
+
+/// <summary>
+/// Free Cloudflare WARP account used as a transport under proxy servers,
+/// so IPv6 servers can be reached from IPv4-only networks.
+/// </summary>
+public class WarpItem
+{
+    public EWarpMode Mode { get; set; } = EWarpMode.Off;
+    public string? PrivateKey { get; set; }
+    public string? PeerPublicKey { get; set; }
+    public string? AddressV4 { get; set; }
+    public string? AddressV6 { get; set; }
+    public string? Reserved { get; set; }
+    public string? EndpointHost { get; set; }
+    public int EndpointPort { get; set; }
+    public string? DeviceId { get; set; }
+}

@@ -1355,6 +1355,49 @@
                 </ScrollViewer>
             </TabItem>
 
+            <TabItem Header="{x:Static resx:ResUI.TbWarpSettings}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="{StaticResource Margin8}" Orientation="Vertical">
+                        <TextBlock
+                            MaxWidth="700"
+                            Margin="{StaticResource Margin8}"
+                            HorizontalAlignment="Left"
+                            Style="{StaticResource ToolbarTextBlock}"
+                            Text="{x:Static resx:ResUI.TbWarpTips}"
+                            TextWrapping="Wrap" />
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock
+                                Margin="{StaticResource Margin8}"
+                                VerticalAlignment="Center"
+                                Style="{StaticResource ToolbarTextBlock}"
+                                Text="{x:Static resx:ResUI.TbWarpMode}" />
+                            <ComboBox
+                                x:Name="cmbWarpMode"
+                                Width="300"
+                                Margin="{StaticResource Margin8}"
+                                Style="{StaticResource DefComboBox}" />
+                        </StackPanel>
+                        <TextBlock
+                            x:Name="txtWarpStatus"
+                            Margin="{StaticResource Margin8}"
+                            Style="{StaticResource ToolbarTextBlock}"
+                            TextWrapping="Wrap" />
+                        <StackPanel Orientation="Horizontal">
+                            <Button
+                                x:Name="btnWarpRegister"
+                                Margin="{StaticResource Margin8}"
+                                Content="{x:Static resx:ResUI.BtnWarpRegister}"
+                                Style="{StaticResource DefButton}" />
+                            <Button
+                                x:Name="btnWarpSelectEndpoint"
+                                Margin="{StaticResource Margin8}"
+                                Content="{x:Static resx:ResUI.BtnWarpSelectEndpoint}"
+                                Style="{StaticResource DefButton}" />
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
             <TabItem Header="{x:Static resx:ResUI.TbSettingsCoreType}">
                 <Grid Margin="{StaticResource Margin8}">
                     <Grid.RowDefinitions>

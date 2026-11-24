@@ -1989,29 +1989,11 @@ The "Get Certificate" action may fail if a self-signed certificate is used or if
   <data name="MsgCheckUpdateViaGitRefsFailed" xml:space="preserve">
     <value>Git references for {0} are unavailable</value>
   </data>
-  <data name="menuAddWarpServer" xml:space="preserve">
-    <value>Add Cloudflare WARP (free, adds IPv6)</value>
-  </data>
-  <data name="menuWarpChainBefore" xml:space="preserve">
-    <value>Connect to this server through WARP (for IPv6-only servers)</value>
-  </data>
-  <data name="menuWarpChainAfter" xml:space="preserve">
-    <value>Exit to the internet through WARP after this server (adds IPv6)</value>
-  </data>
   <data name="MsgWarpRegistering" xml:space="preserve">
     <value>Registering a free Cloudflare WARP account...</value>
   </data>
-  <data name="MsgWarpAdded" xml:space="preserve">
-    <value>Cloudflare WARP added</value>
-  </data>
   <data name="MsgWarpRegisterFailed" xml:space="preserve">
     <value>Could not register Cloudflare WARP. The Cloudflare site may be unreachable from your network: start any working server and try again.</value>
-  </data>
-  <data name="MsgWarpChainUnsupported" xml:space="preserve">
-    <value>This server type cannot be combined with WARP</value>
-  </data>
-  <data name="menuWarpSelectEndpoint" xml:space="preserve">
-    <value>Find the best WARP address</value>
   </data>
   <data name="MsgWarpScanning" xml:space="preserve">
     <value>Checking Cloudflare WARP addresses, this takes a few seconds...</value>
@@ -2022,7 +2004,40 @@ The "Get Certificate" action may fail if a self-signed certificate is used or if
   <data name="MsgWarpEndpointNotFound" xml:space="preserve">
     <value>No WARP address answered. Your network may block WireGuard; use the chain 'server → WARP' instead.</value>
   </data>
-  <data name="MsgWarpNotWarpProfile" xml:space="preserve">
-    <value>Select the Cloudflare WARP server first</value>
+  <data name="TbWarpSettings" xml:space="preserve">
+    <value>WARP (IPv6)</value>
+  </data>
+  <data name="TbWarpMode" xml:space="preserve">
+    <value>Connect to servers through Cloudflare WARP</value>
+  </data>
+  <data name="TbWarpModeOff" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="TbWarpModeIpv6" xml:space="preserve">
+    <value>Only servers with an IPv6 address</value>
+  </data>
+  <data name="TbWarpModeAll" xml:space="preserve">
+    <value>All servers</value>
+  </data>
+  <data name="TbWarpTips" xml:space="preserve">
+    <value>WARP is a free Cloudflare network. v2rayN first connects to WARP over IPv4 and then to your server through it, so servers with an IPv6 address work even if your internet provider has no IPv6.</value>
+  </data>
+  <data name="TbWarpAccount" xml:space="preserve">
+    <value>WARP account</value>
+  </data>
+  <data name="TbWarpNoAccount" xml:space="preserve">
+    <value>not created yet</value>
+  </data>
+  <data name="BtnWarpRegister" xml:space="preserve">
+    <value>Create WARP account</value>
+  </data>
+  <data name="BtnWarpSelectEndpoint" xml:space="preserve">
+    <value>Find the best WARP address</value>
+  </data>
+  <data name="MsgWarpAccountCreated" xml:space="preserve">
+    <value>WARP account created</value>
+  </data>
+  <data name="MsgWarpNoAccount" xml:space="preserve">
+    <value>Create a WARP account first</value>
   </data>
 </root>
