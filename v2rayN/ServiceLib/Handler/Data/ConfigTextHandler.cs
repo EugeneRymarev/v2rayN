@@ -198,6 +198,7 @@ public static class ConfigTextHandler
         config.SystemProxyItem ??= new();
         config.WebDavItem ??= new();
         config.CheckUpdateItem ??= new();
+        config.WarpItem ??= new();
         config.Fragment4RayItem ??= new()
         {
             Packets = "tlshello",

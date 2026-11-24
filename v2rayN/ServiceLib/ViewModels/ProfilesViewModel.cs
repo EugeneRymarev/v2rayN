@@ -56,9 +56,6 @@ public partial class ProfilesViewModel : MyReactiveObject
     public ReactiveCommand<RxVoid, RxVoid> ShareServerCmd { get; }
     public ReactiveCommand<RxVoid, RxVoid> GenGroupAllServerCmd { get; }
     public ReactiveCommand<RxVoid, RxVoid> GenGroupRegionServerCmd { get; }
-    public ReactiveCommand<RxVoid, RxVoid> WarpChainBeforeCmd { get; }
-    public ReactiveCommand<RxVoid, RxVoid> WarpChainAfterCmd { get; }
-    public ReactiveCommand<RxVoid, RxVoid> WarpSelectEndpointCmd { get; }
 
     //servers move
     public ReactiveCommand<RxVoid, RxVoid> MoveTopCmd { get; }
@@ -149,18 +146,6 @@ public partial class ProfilesViewModel : MyReactiveObject
         {
             await GenGroupRegionServer();
         }, canEditRemove);
-        WarpChainBeforeCmd = ReactiveCommand.CreateFromTask(async () =>
-        {
-            await GenWarpChain(true);
-        }, canEditRemove);
-        WarpChainAfterCmd = ReactiveCommand.CreateFromTask(async () =>
-        {
-            await GenWarpChain(false);
-        }, canEditRemove);
-        WarpSelectEndpointCmd = ReactiveCommand.CreateFromTask(async () =>
-        {
-            await WarpSelectEndpoint();
-        });
 
         //servers move
         MoveTopCmd = ReactiveCommand.CreateFromTask(async () =>
@@ -632,70 +617,6 @@ public partial class ProfilesViewModel : MyReactiveObject
         }
         _pendingSelectIndexId = ret.Data?.ToString();
         await RefreshServers();
-    }
-
-    /// <summary>
-    /// Creates a proxy chain of the selected server and Cloudflare WARP.
-    /// </summary>
-    /// <param name="warpFirst">true: device → WARP → server; false: device → server → WARP</param>
-    private async Task GenWarpChain(bool warpFirst)
-    {
-        if (SelectedProfile?.IndexId.IsNullOrEmpty() != false)
-        {
-            NoticeManager.Instance.Enqueue(ResUI.PleaseSelectServer);
-            return;
-        }
-        var item = await ConfigDbQuery.GetProfileItem(SelectedProfile.IndexId);
-        if (item is null)
-        {
-            NoticeManager.Instance.Enqueue(ResUI.PleaseSelectServer);
-            return;
-        }
-
-        NoticeManager.Instance.SendMessage(ResUI.MsgWarpRegistering);
-        var ret = await WarpService.AddChainAsync(item, warpFirst);
-        NoticeManager.Instance.SendMessageAndEnqueue(ret.Msg ?? (ret.Success ? ResUI.OperationSuccess : ResUI.OperationFailed));
-        if (!ret.Success)
-        {
-            return;
-        }
-        _pendingSelectIndexId = ret.Data?.ToString();
-        await RefreshServers();
-    }
-
-    /// <summary>
-    /// Re-picks a working Cloudflare WARP address for the selected WARP server
-    /// (or the WARP part of a selected chain, or the default WARP server).
-    /// </summary>
-    private async Task WarpSelectEndpoint()
-    {
-        var selected = SelectedProfile?.IndexId.IsNullOrEmpty() == false
-            ? await ConfigDbQuery.GetProfileItem(SelectedProfile.IndexId)
-            : null;
-        var warp = await WarpService.ResolveWarpProfileAsync(selected);
-        if (warp is null)
-        {
-            NoticeManager.Instance.SendMessageAndEnqueue(ResUI.MsgWarpNotWarpProfile);
-            return;
-        }
-
-        NoticeManager.Instance.SendMessage(ResUI.MsgWarpScanning);
-        var ret = await WarpService.SelectBestEndpointAsync(warp);
-        NoticeManager.Instance.SendMessageAndEnqueue(ret.Msg ?? (ret.Success ? ResUI.OperationSuccess : ResUI.OperationFailed));
-        if (!ret.Success)
-        {
-            return;
-        }
-        await RefreshServers();
-
-        // Restart the core if the running server uses this WARP profile
-        var active = await ConfigDbQuery.GetProfileItem(_config.IndexId);
-        if (active != null
-            && (active.IndexId == warp.IndexId
-                || (Utils.String2List(active.GetProtocolExtra().ChildItems)?.Contains(warp.IndexId) ?? false)))
-        {
-            Reload();
-        }
     }
 
     private async Task GenGroupRegionServer()

@@ -1,24 +1,10 @@
 namespace ServiceLib.Services;
 
 /// <summary>
-/// Data of a free Cloudflare WARP (WireGuard) device registration.
-/// </summary>
-public record WarpAccount
-{
-    public string PrivateKey { get; init; } = string.Empty;
-    public string PeerPublicKey { get; init; } = string.Empty;
-    public string? AddressV4 { get; init; }
-    public string? AddressV6 { get; init; }
-    public string? Reserved { get; init; }
-    public string EndpointHost { get; init; } = WarpService.DefaultEndpointHost;
-    public int EndpointPort { get; init; } = WarpService.DefaultEndpointPort;
-    public string? DeviceId { get; init; }
-}
-
-/// <summary>
-/// Registers a free Cloudflare WARP device and turns it into a WireGuard profile.
-/// WARP gives every device an IPv6 address, so routing traffic through it lets a client
-/// whose ISP only offers IPv4 reach IPv6 servers and sites.
+/// Cloudflare WARP as a transport under the user's proxy servers.
+/// WARP gives the device an IPv6 address, so when the core dials a proxy server through WARP,
+/// servers that only have IPv6 become reachable even if the ISP offers IPv4 only.
+/// The WARP account lives in <see cref="Config.WarpItem" />, not in the server list.
 /// </summary>
 public static class WarpService
 {
@@ -33,13 +19,32 @@ public static class WarpService
     public const string DefaultEndpointHost = "162.159.192.1";
     public const int DefaultEndpointPort = 2408;
     public const int DefaultMtu = 1280;
-    public const string DefaultDns = "1.1.1.1, 2606:4700:4700::1111";
-    public const string DefaultRemarks = "Cloudflare WARP";
+
+    /// <summary>Outbound tag of the WARP transport in generated core configs.</summary>
+    public const string TransportTag = "warp-transport";
+
+    public const string TransportIndexId = "inner-warp-transport";
+
+    #region account
+
+    public static bool HasAccount(WarpItem? item)
+    {
+        return item != null
+               && item.PrivateKey.IsNotEmpty()
+               && item.PeerPublicKey.IsNotEmpty()
+               && item.EndpointHost.IsNotEmpty()
+               && item.EndpointPort > 0;
+    }
+
+    public static bool IsEnabled(WarpItem? item)
+    {
+        return item?.Mode is EWarpMode.Ipv6Only or EWarpMode.All && HasAccount(item);
+    }
 
     /// <summary>
     /// Creates a new WARP device registration with freshly generated keys.
     /// </summary>
-    public static async Task<WarpAccount?> RegisterAsync(bool useProxy, CancellationToken cancellationToken = default)
+    public static async Task<WarpItem?> RegisterAsync(bool useProxy, CancellationToken cancellationToken = default)
     {
         var (privateKey, publicKey) = X25519Utils.GenerateKeyPair();
         var body = BuildRegistrationBody(publicKey, DateTime.UtcNow);
@@ -82,7 +87,7 @@ public static class WarpService
     /// <summary>
     /// Reads the answer of the registration API.
     /// </summary>
-    public static WarpAccount? ParseRegistrationResponse(string? json, string privateKey)
+    public static WarpItem? ParseRegistrationResponse(string? json, string privateKey)
     {
         var root = JsonUtils.ParseJson(json ?? string.Empty);
         // Some API versions wrap the payload in "result"
@@ -101,10 +106,10 @@ public static class WarpService
         var addresses = config["interface"]?["addresses"];
         var (host, port) = ParseEndpoint(GetString(peer?["endpoint"]?["v4"]));
 
-        return new WarpAccount
+        return new WarpItem
         {
             PrivateKey = privateKey,
-            PeerPublicKey = peerPublicKey!,
+            PeerPublicKey = peerPublicKey,
             AddressV4 = GetString(addresses?["v4"]),
             AddressV6 = GetString(addresses?["v6"]),
             Reserved = ClientIdToReserved(GetString(config["client_id"])),
@@ -138,48 +143,14 @@ public static class WarpService
         }
     }
 
-    public static ProfileItem CreateProfileItem(WarpAccount account, string? subId, string? remarks = null)
-    {
-        var addresses = new List<string>();
-        if (account.AddressV4.IsNotEmpty())
-        {
-            addresses.Add($"{account.AddressV4}/32");
-        }
-        if (account.AddressV6.IsNotEmpty())
-        {
-            addresses.Add($"{account.AddressV6}/128");
-        }
-
-        var item = new ProfileItem
-        {
-            ConfigType = EConfigType.WireGuard,
-            CoreType = ECoreType.Xray,
-            Remarks = remarks.IsNullOrEmpty() ? DefaultRemarks : remarks!,
-            Address = account.EndpointHost,
-            Port = account.EndpointPort,
-            Password = account.PrivateKey,
-            Subid = subId ?? string.Empty,
-            IsSub = false,
-        };
-        item.SetProtocolExtra(item.GetProtocolExtra() with
-        {
-            WgPublicKey = account.PeerPublicKey,
-            WgInterfaceAddress = string.Join(", ", addresses),
-            WgReserved = account.Reserved,
-            WgMtu = DefaultMtu,
-            WgDns = DefaultDns,
-        });
-        return item;
-    }
-
     /// <summary>
-    /// Registers WARP and saves it as a new WireGuard server.
+    /// Registers a new WARP account, picks a working endpoint and stores it in the settings.
     /// First tries a direct connection; if that fails (the API can be blocked) and a proxy core is running,
-    /// retries through the local proxy. Returns the new profile's IndexId in <see cref="RetResult.Data" />.
+    /// retries through the local proxy. The current <see cref="WarpItem.Mode" /> is kept.
     /// </summary>
-    public static async Task<RetResult> AddWarpServerAsync(string? subId)
+    public static async Task<RetResult> RegisterToConfigAsync(Config config)
     {
-        WarpAccount? account = null;
+        WarpItem? account = null;
         foreach (var useProxy in new[] { false, true })
         {
             try
@@ -201,39 +172,39 @@ public static class WarpService
             return new RetResult(false, ResUI.MsgWarpRegisterFailed);
         }
 
-        var item = CreateProfileItem(account, subId);
-
         // Pick an address that actually answers from this network; keep the default if none does.
-        var best = await FindBestEndpointAsync(item, 60);
+        var best = await FindBestEndpointAsync(account, 60);
         if (best != null)
         {
-            item.Address = best.Host;
-            item.Port = best.Port;
+            account.EndpointHost = best.Host;
+            account.EndpointPort = best.Port;
         }
 
-        if (await ConfigDbHandler.AddWireguardServer(item) != 0)
+        account.Mode = config.WarpItem?.Mode ?? EWarpMode.Off;
+        config.WarpItem = account;
+        if (await ConfigTextHandler.SaveConfig() != 0)
         {
             return new RetResult(false, ResUI.OperationFailed);
         }
+
         var msg = best != null
-            ? $"{ResUI.MsgWarpAdded}. {string.Format(ResUI.MsgWarpEndpointSelected, best.Host, best.Port, best.RttMs)}"
-            : $"{ResUI.MsgWarpAdded}. {ResUI.MsgWarpEndpointNotFound}";
-        return new RetResult(true, msg, item.IndexId);
+            ? $"{ResUI.MsgWarpAccountCreated}. {string.Format(ResUI.MsgWarpEndpointSelected, best.Host, best.Port, best.RttMs)}"
+            : $"{ResUI.MsgWarpAccountCreated}. {ResUI.MsgWarpEndpointNotFound}";
+        return new RetResult(true, msg);
     }
 
     /// <summary>
-    /// Scans WARP addresses with the keys of <paramref name="warp" /> and returns the fastest one that answered.
+    /// Scans WARP addresses with the account's keys and returns the fastest one that answered.
     /// </summary>
-    public static async Task<WarpEndpointResult?> FindBestEndpointAsync(ProfileItem warp, int candidateCount = 100)
+    public static async Task<WarpEndpointResult?> FindBestEndpointAsync(WarpItem account, int candidateCount = 100)
     {
-        var peerPublicKey = warp.GetProtocolExtra().WgPublicKey;
-        if (warp.Password.IsNullOrEmpty() || peerPublicKey.IsNullOrEmpty())
+        if (account.PrivateKey.IsNullOrEmpty() || account.PeerPublicKey.IsNullOrEmpty())
         {
             return null;
         }
         try
         {
-            var results = await WarpEndpointScanner.ScanAsync(warp.Password, peerPublicKey!, candidateCount);
+            var results = await WarpEndpointScanner.ScanAsync(account.PrivateKey!, account.PeerPublicKey!, candidateCount);
             return results.FirstOrDefault();
         }
         catch (Exception ex)
@@ -244,129 +215,94 @@ public static class WarpService
     }
 
     /// <summary>
-    /// Re-picks the best address for an existing WARP profile and saves it.
+    /// Re-picks the best address for the stored WARP account and saves it.
     /// </summary>
-    public static async Task<RetResult> SelectBestEndpointAsync(ProfileItem warp)
+    public static async Task<RetResult> SelectBestEndpointAsync(Config config)
     {
-        if (warp.ConfigType != EConfigType.WireGuard)
+        var account = config.WarpItem;
+        if (account == null || !HasAccount(account))
         {
-            return new RetResult(false, ResUI.MsgWarpNotWarpProfile);
+            return new RetResult(false, ResUI.MsgWarpNoAccount);
         }
-        var best = await FindBestEndpointAsync(warp);
+        var best = await FindBestEndpointAsync(account);
         if (best == null)
         {
             return new RetResult(false, ResUI.MsgWarpEndpointNotFound);
         }
-        warp.Address = best.Host;
-        warp.Port = best.Port;
-        if (await ConfigDbHandler.AddWireguardServer(warp) != 0)
+        account.EndpointHost = best.Host;
+        account.EndpointPort = best.Port;
+        if (await ConfigTextHandler.SaveConfig() != 0)
         {
             return new RetResult(false, ResUI.OperationFailed);
         }
-        return new RetResult(true, string.Format(ResUI.MsgWarpEndpointSelected, best.Host, best.Port, best.RttMs), warp.IndexId);
+        return new RetResult(true, string.Format(ResUI.MsgWarpEndpointSelected, best.Host, best.Port, best.RttMs));
     }
+
+    #endregion account
+
+    #region transport
 
     /// <summary>
-    /// The WARP profile to work with for <paramref name="selected" />: the profile itself if it is WARP,
-    /// the WARP member of a chain, or the default "Cloudflare WARP" profile.
+    /// The in-memory WireGuard node that the cores use as the WARP transport.
     /// </summary>
-    public static async Task<ProfileItem?> ResolveWarpProfileAsync(ProfileItem? selected)
+    public static ProfileItem CreateTransportNode(WarpItem account)
     {
-        if (selected != null && IsWarpProfile(selected))
+        var addresses = new List<string>();
+        if (account.AddressV4.IsNotEmpty())
         {
-            return selected;
+            addresses.Add($"{account.AddressV4}/32");
         }
-        if (selected?.ConfigType == EConfigType.ProxyChain)
+        if (account.AddressV6.IsNotEmpty())
         {
-            foreach (var id in Utils.String2List(selected.GetProtocolExtra().ChildItems) ?? [])
-            {
-                var child = await ConfigDbQuery.GetProfileItem(id);
-                if (child != null && IsWarpProfile(child))
-                {
-                    return child;
-                }
-            }
+            addresses.Add($"{account.AddressV6}/128");
         }
-        var byName = await ConfigDbQuery.GetProfileItemViaRemarks(DefaultRemarks);
-        return byName is { ConfigType: EConfigType.WireGuard } ? byName : null;
-    }
 
-    public static bool IsWarpProfile(ProfileItem item)
-    {
-        return item.ConfigType == EConfigType.WireGuard
-               && (item.Remarks == DefaultRemarks || WarpEndpointScanner.IsWarpAddress(item.Address));
-    }
-
-    /// <summary>
-    /// Finds an existing WARP profile (by remarks) or registers a new one.
-    /// </summary>
-    public static async Task<ProfileItem?> GetOrAddWarpServerAsync(string? subId)
-    {
-        var existing = await ConfigDbQuery.GetProfileItemViaRemarks(DefaultRemarks);
-        if (existing is { ConfigType: EConfigType.WireGuard })
+        var item = new ProfileItem
         {
-            return existing;
-        }
-        var ret = await AddWarpServerAsync(subId);
-        if (!ret.Success || ret.Data is not string indexId)
-        {
-            return null;
-        }
-        return await ConfigDbQuery.GetProfileItem(indexId);
-    }
-
-    /// <summary>
-    /// Builds a proxy chain with WARP and the given server.
-    /// <paramref name="warpFirst" /> = true: device → WARP → server. The server is reached over WARP,
-    /// so IPv6-only servers work even on an IPv4-only network.
-    /// <paramref name="warpFirst" /> = false: device → server → WARP. Sites see a WARP address,
-    /// which gives IPv6 even when the server itself has none.
-    /// </summary>
-    public static ProfileItem CreateChainItem(ProfileItem warp, ProfileItem server, bool warpFirst)
-    {
-        var chain = new ProfileItem
-        {
-            ConfigType = EConfigType.ProxyChain,
-            CoreType = server.CoreType is ECoreType.sing_box ? ECoreType.sing_box : ECoreType.Xray,
-            Remarks = warpFirst
-                ? $"WARP → {server.Remarks}"
-                : $"{server.Remarks} → WARP",
-            Subid = server.Subid,
+            IndexId = TransportIndexId,
+            ConfigType = EConfigType.WireGuard,
+            CoreType = ECoreType.Xray,
+            Remarks = "WARP",
+            Address = account.EndpointHost ?? DefaultEndpointHost,
+            Port = account.EndpointPort > 0 ? account.EndpointPort : DefaultEndpointPort,
+            Password = account.PrivateKey ?? string.Empty,
+            Subid = string.Empty,
             IsSub = false,
         };
-        List<string> childItems = warpFirst ? [warp.IndexId, server.IndexId] : [server.IndexId, warp.IndexId];
-        chain.SetProtocolExtra(chain.GetProtocolExtra() with
+        item.SetProtocolExtra(item.GetProtocolExtra() with
         {
-            GroupType = nameof(EConfigType.ProxyChain),
-            ChildItems = Utils.List2String(childItems),
+            WgPublicKey = account.PeerPublicKey,
+            WgInterfaceAddress = string.Join(", ", addresses),
+            WgReserved = account.Reserved,
+            WgMtu = DefaultMtu,
         });
-        return chain;
+        return item;
     }
 
-    public static async Task<RetResult> AddChainAsync(ProfileItem server, bool warpFirst)
+    /// <summary>
+    /// Whether a proxy server at <paramref name="serverAddress" /> should be dialed through WARP.
+    /// </summary>
+    public static bool ShouldDialThroughWarp(WarpItem? account, string? serverAddress)
     {
-        if (server.ConfigType.IsGroupType() || server.ConfigType is EConfigType.Custom)
+        if (!IsEnabled(account) || serverAddress.IsNullOrEmpty())
         {
-            return new RetResult(false, ResUI.MsgWarpChainUnsupported);
+            return false;
         }
-        if (server.ConfigType == EConfigType.WireGuard && server.Remarks == DefaultRemarks)
+        var host = serverAddress!.Trim().Trim('[', ']');
+        // never route WARP through itself
+        if (host == account!.EndpointHost)
         {
-            return new RetResult(false, ResUI.MsgWarpChainUnsupported);
+            return false;
         }
-
-        var warp = await GetOrAddWarpServerAsync(server.Subid);
-        if (warp == null)
+        return account.Mode switch
         {
-            return new RetResult(false, ResUI.MsgWarpRegisterFailed);
-        }
-
-        var chain = CreateChainItem(warp, server, warpFirst);
-        if (await ConfigDbHandler.AddServerCommon(chain) != 0)
-        {
-            return new RetResult(false, ResUI.OperationFailed);
-        }
-        return new RetResult(true, ResUI.OperationSuccess, chain.IndexId);
+            EWarpMode.All => true,
+            EWarpMode.Ipv6Only => Utils.IsIpv6(host),
+            _ => false,
+        };
     }
+
+    #endregion transport
 
     private static (string Host, int Port) ParseEndpoint(string? endpoint)
     {

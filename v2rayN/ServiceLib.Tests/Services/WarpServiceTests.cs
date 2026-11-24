@@ -91,67 +91,112 @@ public class WarpServiceTests
         await node["tos"]!.GetValue<string>().Should().BeEqualTo("2026-01-02T03:04:05.000Z");
     }
 
-    [Test]
-    public async Task CreateProfileItem_ShouldBuildWireguardProfileWithIpv6()
+    private static WarpItem SampleAccount(EWarpMode mode)
     {
-        var account = WarpService.ParseRegistrationResponse(SampleResponse, "priv")!;
-        var item = WarpService.CreateProfileItem(account, "sub1");
-        var extra = item.GetProtocolExtra();
+        var account = WarpService.ParseRegistrationResponse(SampleResponse, Convert.ToBase64String(new byte[32]))!;
+        account.Mode = mode;
+        return account;
+    }
 
-        await item.ConfigType.Should().BeEqualTo(EConfigType.WireGuard);
-        await item.Address.Should().BeEqualTo("162.159.192.7");
-        await item.Port.Should().BeEqualTo(2408);
-        await item.Password.Should().BeEqualTo("priv");
-        await item.Subid.Should().BeEqualTo("sub1");
+    [Test]
+    public async Task CreateTransportNode_ShouldBuildWireguardNodeWithIpv6()
+    {
+        var node = WarpService.CreateTransportNode(SampleAccount(EWarpMode.All));
+        var extra = node.GetProtocolExtra();
+
+        await node.ConfigType.Should().BeEqualTo(EConfigType.WireGuard);
+        await node.IndexId.Should().BeEqualTo(WarpService.TransportIndexId);
+        await node.Address.Should().BeEqualTo("162.159.192.7");
+        await node.Port.Should().BeEqualTo(2408);
         await extra.WgInterfaceAddress.Should().BeEqualTo("172.16.0.2/32, 2606:4700:110:8a36::1/128");
         await extra.WgReserved.Should().BeEqualTo("1, 2, 3");
         await extra.WgMtu.Should().BeEqualTo(1280);
     }
 
     [Test]
-    public async Task CreateChainItem_ShouldOrderNodes()
+    public async Task ShouldDialThroughWarp_ShouldFollowMode()
     {
-        var warp = new ProfileItem { IndexId = "warp", Remarks = WarpService.DefaultRemarks, ConfigType = EConfigType.WireGuard };
-        var server = new ProfileItem { IndexId = "srv", Remarks = "My server", ConfigType = EConfigType.VLESS, CoreType = ECoreType.Xray };
+        var all = SampleAccount(EWarpMode.All);
+        var v6 = SampleAccount(EWarpMode.Ipv6Only);
+        var off = SampleAccount(EWarpMode.Off);
 
-        var before = WarpService.CreateChainItem(warp, server, true);
-        var after = WarpService.CreateChainItem(warp, server, false);
+        await WarpService.ShouldDialThroughWarp(all, "example.com").Should().BeTrue();
+        await WarpService.ShouldDialThroughWarp(all, "1.2.3.4").Should().BeTrue();
+        await WarpService.ShouldDialThroughWarp(v6, "1.2.3.4").Should().BeFalse();
+        await WarpService.ShouldDialThroughWarp(v6, "2001:db8::1").Should().BeTrue();
+        await WarpService.ShouldDialThroughWarp(v6, "[2001:db8::1]").Should().BeTrue();
+        await WarpService.ShouldDialThroughWarp(off, "2001:db8::1").Should().BeFalse();
+        // never through itself
+        await WarpService.ShouldDialThroughWarp(all, all.EndpointHost).Should().BeFalse();
+        // no account -> never
+        await WarpService.ShouldDialThroughWarp(new WarpItem { Mode = EWarpMode.All }, "1.2.3.4").Should().BeFalse();
+    }
 
-        await before.ConfigType.Should().BeEqualTo(EConfigType.ProxyChain);
-        await before.GetProtocolExtra().ChildItems.Should().BeEqualTo("warp,srv");
-        await before.Remarks.Should().BeEqualTo("WARP → My server");
-        await after.GetProtocolExtra().ChildItems.Should().BeEqualTo("srv,warp");
-        await after.Remarks.Should().BeEqualTo("My server → WARP");
+    private static V2rayConfig GenerateXray(EWarpMode mode, string serverAddress)
+    {
+        var config = CoreConfigTestFactory.CreateConfig(ECoreType.Xray);
+        config.WarpItem = SampleAccount(mode);
+        CoreConfigTestFactory.BindAppManagerConfig(config);
+        var server = CoreConfigTestFactory.CreateSocksNode(ECoreType.Xray, "srv", "server");
+        server.Address = serverAddress;
+        var context = CoreConfigTestFactory.CreateContext(config, server, ECoreType.Xray);
+        var result = new CoreConfigV2rayService(context).GenerateClientConfigContent();
+        if (!result.Success)
+        {
+            throw new InvalidOperationException(result.Msg);
+        }
+        return JsonUtils.Deserialize<V2rayConfig>(result.Data!.ToString())!;
     }
 
     [Test]
-    public async Task WarpFirstChain_Xray_ShouldDialServerThroughWarp()
+    public async Task Xray_ModeAll_ShouldDialServerThroughWarp()
     {
-        var config = CoreConfigTestFactory.CreateConfig(ECoreType.Xray);
-        CoreConfigTestFactory.BindAppManagerConfig(config);
-
-        var account = WarpService.ParseRegistrationResponse(SampleResponse, Convert.ToBase64String(new byte[32]))!;
-        var warp = WarpService.CreateProfileItem(account, string.Empty);
-        warp.IndexId = "warp";
-        var server = CoreConfigTestFactory.CreateSocksNode(ECoreType.Xray, "srv", "server");
-        server.Address = "2001:db8::1";
-        var chain = WarpService.CreateChainItem(warp, server, true);
-        chain.IndexId = "chain";
-
-        var context = CoreConfigTestFactory.CreateContext(config, chain, ECoreType.Xray);
-        context.AllProxiesMap[warp.IndexId] = warp;
-        context.AllProxiesMap[server.IndexId] = server;
-
-        var result = new CoreConfigV2rayService(context).GenerateClientConfigContent();
-        await result.Success.Should().BeTrue();
-        var cfg = JsonUtils.Deserialize<V2rayConfig>(result.Data!.ToString())!;
+        var cfg = GenerateXray(EWarpMode.All, "1.2.3.4");
 
         var proxy = cfg.outbounds.First(o => o.tag == Global.ProxyTag);
-        await proxy.protocol.Should().BeEqualTo("socks");
-        var dialer = proxy.streamSettings?.sockopt?.dialerProxy ?? string.Empty;
-        await dialer.StartsWith("chain-proxy-1-", StringComparison.Ordinal).Should().BeTrue();
-        var warpOutbound = cfg.outbounds.First(o => o.tag == dialer);
-        await warpOutbound.protocol.Should().BeEqualTo("wireguard");
+        await (proxy.streamSettings?.sockopt?.dialerProxy).Should().BeEqualTo(WarpService.TransportTag);
+        var warp = cfg.outbounds.First(o => o.tag == WarpService.TransportTag);
+        await warp.protocol.Should().BeEqualTo("wireguard");
+        await (warp.streamSettings?.sockopt?.dialerProxy is null).Should().BeTrue();
+    }
+
+    [Test]
+    public async Task Xray_ModeIpv6Only_ShouldOnlyAffectIpv6Servers()
+    {
+        var v4 = GenerateXray(EWarpMode.Ipv6Only, "1.2.3.4");
+        await v4.outbounds.Any(o => o.tag == WarpService.TransportTag).Should().BeFalse();
+
+        var v6 = GenerateXray(EWarpMode.Ipv6Only, "2001:db8::1");
+        var proxy = v6.outbounds.First(o => o.tag == Global.ProxyTag);
+        await (proxy.streamSettings?.sockopt?.dialerProxy).Should().BeEqualTo(WarpService.TransportTag);
+    }
+
+    [Test]
+    public async Task Xray_ModeOff_ShouldNotAddWarp()
+    {
+        var cfg = GenerateXray(EWarpMode.Off, "2001:db8::1");
+        await cfg.outbounds.Any(o => o.tag == WarpService.TransportTag).Should().BeFalse();
+    }
+
+    [Test]
+    public async Task Singbox_ModeAll_ShouldDetourServerThroughWarp()
+    {
+        var config = CoreConfigTestFactory.CreateConfig(ECoreType.sing_box);
+        config.WarpItem = SampleAccount(EWarpMode.All);
+        CoreConfigTestFactory.BindAppManagerConfig(config);
+        var server = CoreConfigTestFactory.CreateSocksNode(ECoreType.sing_box, "srv", "server");
+        server.Address = "2001:db8::1";
+        var context = CoreConfigTestFactory.CreateContext(config, server, ECoreType.sing_box);
+
+        var result = new CoreConfigSingboxService(context).GenerateClientConfigContent();
+        await result.Success.Should().BeTrue();
+        var cfg = JsonUtils.Deserialize<SingboxConfig>(result.Data!.ToString())!;
+
+        var proxy = cfg.outbounds.First(o => o.tag == Global.ProxyTag);
+        await proxy.detour.Should().BeEqualTo(WarpService.TransportTag);
+        var warp = cfg.endpoints!.First(e => e.tag == WarpService.TransportTag);
+        await warp.type.Should().BeEqualTo("wireguard");
+        await warp.detour.IsNullOrEmpty().Should().BeTrue();
     }
 }
 

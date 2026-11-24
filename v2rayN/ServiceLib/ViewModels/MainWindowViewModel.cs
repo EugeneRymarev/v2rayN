@@ -37,7 +37,6 @@ public partial class MainWindowViewModel : MyReactiveObject
     public ReactiveCommand<RxVoid, RxVoid> AddCustomOutboundServerCmd { get; }
     public ReactiveCommand<RxVoid, RxVoid> AddPolicyGroupServerCmd { get; }
     public ReactiveCommand<RxVoid, RxVoid> AddProxyChainServerCmd { get; }
-    public ReactiveCommand<RxVoid, RxVoid> AddWarpServerCmd { get; }
     public ReactiveCommand<RxVoid, RxVoid> AddServerViaClipboardCmd { get; }
     public ReactiveCommand<RxVoid, RxVoid> AddServerViaScanCmd { get; }
     public ReactiveCommand<RxVoid, RxVoid> AddServerViaImageCmd { get; }
@@ -161,10 +160,6 @@ public partial class MainWindowViewModel : MyReactiveObject
         AddProxyChainServerCmd = ReactiveCommand.CreateFromTask(async () =>
         {
             await AddServerAsync(EConfigType.ProxyChain);
-        });
-        AddWarpServerCmd = ReactiveCommand.CreateFromTask(async () =>
-        {
-            await AddWarpServerAsync();
         });
         AddServerViaClipboardCmd = ReactiveCommand.CreateFromTask(async () =>
         {
@@ -472,17 +467,6 @@ public partial class MainWindowViewModel : MyReactiveObject
             {
                 await Reload();
             }
-        }
-    }
-
-    public async Task AddWarpServerAsync()
-    {
-        NoticeManager.Instance.SendMessage(ResUI.MsgWarpRegistering);
-        var ret = await WarpService.AddWarpServerAsync(_config.SubIndexId);
-        NoticeManager.Instance.SendMessageAndEnqueue(ret.Msg ?? (ret.Success ? ResUI.OperationSuccess : ResUI.OperationFailed));
-        if (ret.Success)
-        {
-            await RefreshServersDispatcherAsync();
         }
     }
 
