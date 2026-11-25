@@ -69,11 +69,13 @@ public partial class CoreConfigV2rayService
                 tunInbound.settings.gateway = [address];
                 // Without ::/0, IPv6 bypasses the tunnel. Skip it only when the host has no global IPv6
                 // address and EnableIPv6Address is off; NAT66 hosts have only ULA addresses.
-                var routeIPv6 = _config.TunModeItem.EnableIPv6Address || context.HasGlobalIPv6Address;
+                // In "everything through WARP" mode IPv6 comes from WARP, so the tunnel must carry it.
+                var tunIPv6 = _config.TunModeItem.EnableIPv6Address || WarpService.IsWarpOnly(_config.WarpItem);
+                var routeIPv6 = tunIPv6 || context.HasGlobalIPv6Address;
                 tunInbound.settings.autoSystemRoutingTable = routeIPv6
                     ? ["0.0.0.0/0", "::/0"]
                     : ["0.0.0.0/0"];
-                if (_config.TunModeItem.EnableIPv6Address == true)
+                if (tunIPv6)
                 {
                     var address6 = _config.TunModeItem.IPv6Address.NullIfEmpty() ?? Global.TunIPv6Address.First();
                     tunInbound.settings.gateway.Add(address6);

@@ -181,6 +181,42 @@ public class WarpServiceTests
         await cfg.endpoints!.Any(e => e.tag == WarpService.TransportTag).Should().BeFalse();
     }
 
+    [Test]
+    public async Task Xray_WarpOnlyTun_ShouldCarryIPv6WithoutHostIPv6()
+    {
+        var config = CoreConfigTestFactory.CreateConfigWithTun(ECoreType.Xray, enableIPv6Address: false);
+        config.WarpItem = SampleAccount(EWarpMode.WarpOnly);
+        CoreConfigTestFactory.BindAppManagerConfig(config);
+        var node = WarpService.CreateTransportNode(config.WarpItem);
+        var context = CoreConfigTestFactory.CreateContext(config, node, ECoreType.Xray, hasGlobalIPv6Address: false);
+
+        var result = new CoreConfigV2rayService(context).GenerateClientConfigContent();
+        await result.Success.Should().BeTrue();
+        var cfg = JsonUtils.Deserialize<V2rayConfig>(result.Data!.ToString())!;
+
+        var tun = cfg.inbounds.First(i => i.protocol == "tun");
+        await tun.settings.autoSystemRoutingTable.Should().Contain("::/0");
+        await tun.settings.gateway.Should().HaveCount(2);
+    }
+
+    [Test]
+    public async Task Singbox_WarpOnlyTun_ShouldHaveIPv6Address()
+    {
+        var config = CoreConfigTestFactory.CreateConfigWithTun(ECoreType.sing_box, enableIPv6Address: false);
+        config.WarpItem = SampleAccount(EWarpMode.WarpOnly);
+        CoreConfigTestFactory.BindAppManagerConfig(config);
+        var node = WarpService.CreateTransportNode(config.WarpItem);
+        node.CoreType = ECoreType.sing_box;
+        var context = CoreConfigTestFactory.CreateContext(config, node, ECoreType.sing_box, hasGlobalIPv6Address: false);
+
+        var result = new CoreConfigSingboxService(context).GenerateClientConfigContent();
+        await result.Success.Should().BeTrue();
+        var cfg = JsonUtils.Deserialize<SingboxConfig>(result.Data!.ToString())!;
+
+        var tun = cfg.inbounds.First(i => i.type == "tun");
+        await tun.address!.Should().HaveCount(2);
+    }
+
     private static V2rayConfig GenerateXray(EWarpMode mode, string serverAddress)
     {
         var config = CoreConfigTestFactory.CreateConfig(ECoreType.Xray);
