@@ -52,7 +52,7 @@ public partial class OptionSettingWindow : WindowBase<OptionSettingViewModel>
         cmbMixedConcurrencyCount.ItemsSource = Enumerable.Range(Global.SpeedTestConcurrencyCountMin, 20).ToList();
         cmbSpeedTestTimeout.ItemsSource = Enumerable.Range(2, 5).Select(i => i * 5).ToList();
         cmbSpeedTestUrl.ItemsSource = Global.SpeedTestUrls;
-        cmbWarpMode.ItemsSource = new List<string> { ResUI.TbWarpModeOff, ResUI.TbWarpModeIpv6, ResUI.TbWarpModeAll };
+        cmbWarpMode.ItemsSource = new List<string> { ResUI.TbWarpModeOff, ResUI.TbWarpModeIpv6, ResUI.TbWarpModeAll, ResUI.TbWarpModeWarpOnly };
         cmbSpeedPingTestUrl.ItemsSource = Global.SpeedPingTestUrls;
         cmbUdpTestTarget.ItemsSource = Global.UdpTestTargets;
         cmbSubConvertUrl.ItemsSource = Global.SubConvertUrls;

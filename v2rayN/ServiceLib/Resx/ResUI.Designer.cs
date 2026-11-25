@@ -5707,7 +5707,7 @@ namespace ServiceLib.Resx {
         }
 
         /// <summary>
-        ///   Looks up a localized string similar to No WARP address answered. Your network may block WireGuard; use the chain 'server → WARP' instead..
+        ///   Looks up a localized string similar to No WARP address answered. Your network may be blocking WireGuard..
         /// </summary>
         public static string MsgWarpEndpointNotFound {
             get {
@@ -5761,7 +5761,16 @@ namespace ServiceLib.Resx {
         }
 
         /// <summary>
-        ///   Looks up a localized string similar to WARP is a free Cloudflare network. v2rayN first connects to WARP over IPv4 and then to your server through it, so servers with an IPv6 address work even if your internet provider has no IPv6..
+        ///   Looks up a localized string similar to Everything through WARP, without a server.
+        /// </summary>
+        public static string TbWarpModeWarpOnly {
+            get {
+                return ResourceManager.GetString("TbWarpModeWarpOnly", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to WARP is a free Cloudflare network. v2rayN first connects to WARP over IPv4 and then to your server through it, so servers with an IPv6 address work even if your internet provider has no IPv6. With &apos;Everything through WARP&apos; no server is needed: WARP itself is the exit. Turn on TUN to send all programs on the computer this way..
         /// </summary>
         public static string TbWarpTips {
             get {

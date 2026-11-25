@@ -42,6 +42,26 @@ public static class WarpService
     }
 
     /// <summary>
+    /// True when WARP itself should be the exit instead of the selected proxy server.
+    /// </summary>
+    public static bool IsWarpOnly(WarpItem? item)
+    {
+        return item?.Mode == EWarpMode.WarpOnly && HasAccount(item);
+    }
+
+    /// <summary>
+    /// The node the core should run: the WARP node in "WARP only" mode, otherwise the selected server.
+    /// </summary>
+    public static async Task<ProfileItem?> GetNodeToRunAsync(Config config)
+    {
+        if (IsWarpOnly(config.WarpItem))
+        {
+            return CreateTransportNode(config.WarpItem!);
+        }
+        return await ConfigTextHandler.GetDefaultServer();
+    }
+
+    /// <summary>
     /// Creates a new WARP device registration with freshly generated keys.
     /// </summary>
     public static async Task<WarpItem?> RegisterAsync(bool useProxy, CancellationToken cancellationToken = default)

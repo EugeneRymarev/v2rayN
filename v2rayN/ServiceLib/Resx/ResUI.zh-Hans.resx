@@ -1994,7 +1994,7 @@
     <value>已选择 WARP 地址：{0}:{1}（{2} 毫秒）</value>
   </data>
   <data name="MsgWarpEndpointNotFound" xml:space="preserve">
-    <value>没有 WARP 地址响应。你的网络可能屏蔽了 WireGuard：请改用“服务器 → WARP”链。</value>
+    <value>没有 WARP 地址响应。你的网络可能屏蔽了 WireGuard。</value>
   </data>
   <data name="TbWarpSettings" xml:space="preserve">
     <value>WARP (IPv6)</value>

@@ -132,6 +132,55 @@ public class WarpServiceTests
         await WarpService.ShouldDialThroughWarp(new WarpItem { Mode = EWarpMode.All }, "1.2.3.4").Should().BeFalse();
     }
 
+    [Test]
+    public async Task WarpOnly_ShouldUseWarpAsExitAndNotChainServers()
+    {
+        var warpOnly = SampleAccount(EWarpMode.WarpOnly);
+
+        await WarpService.IsWarpOnly(warpOnly).Should().BeTrue();
+        await WarpService.IsWarpOnly(SampleAccount(EWarpMode.All)).Should().BeFalse();
+        await WarpService.IsWarpOnly(new WarpItem { Mode = EWarpMode.WarpOnly }).Should().BeFalse();
+        await WarpService.IsEnabled(warpOnly).Should().BeFalse();
+        await WarpService.ShouldDialThroughWarp(warpOnly, "2001:db8::1").Should().BeFalse();
+    }
+
+    [Test]
+    public async Task Xray_WarpOnly_ShouldRunWarpAsMainOutbound()
+    {
+        var config = CoreConfigTestFactory.CreateConfig(ECoreType.Xray);
+        config.WarpItem = SampleAccount(EWarpMode.WarpOnly);
+        CoreConfigTestFactory.BindAppManagerConfig(config);
+        var node = WarpService.CreateTransportNode(config.WarpItem);
+        var context = CoreConfigTestFactory.CreateContext(config, node, ECoreType.Xray);
+
+        var result = new CoreConfigV2rayService(context).GenerateClientConfigContent();
+        await result.Success.Should().BeTrue();
+        var cfg = JsonUtils.Deserialize<V2rayConfig>(result.Data!.ToString())!;
+
+        var proxy = cfg.outbounds.First(o => o.tag == Global.ProxyTag);
+        await proxy.protocol.Should().BeEqualTo("wireguard");
+        await cfg.outbounds.Any(o => o.tag == WarpService.TransportTag).Should().BeFalse();
+    }
+
+    [Test]
+    public async Task Singbox_WarpOnly_ShouldRunWarpAsMainEndpoint()
+    {
+        var config = CoreConfigTestFactory.CreateConfig(ECoreType.sing_box);
+        config.WarpItem = SampleAccount(EWarpMode.WarpOnly);
+        CoreConfigTestFactory.BindAppManagerConfig(config);
+        var node = WarpService.CreateTransportNode(config.WarpItem);
+        node.CoreType = ECoreType.sing_box;
+        var context = CoreConfigTestFactory.CreateContext(config, node, ECoreType.sing_box);
+
+        var result = new CoreConfigSingboxService(context).GenerateClientConfigContent();
+        await result.Success.Should().BeTrue();
+        var cfg = JsonUtils.Deserialize<SingboxConfig>(result.Data!.ToString())!;
+
+        var proxy = cfg.endpoints!.First(e => e.tag == Global.ProxyTag);
+        await proxy.type.Should().BeEqualTo("wireguard");
+        await cfg.endpoints!.Any(e => e.tag == WarpService.TransportTag).Should().BeFalse();
+    }
+
     private static V2rayConfig GenerateXray(EWarpMode mode, string serverAddress)
     {
         var config = CoreConfigTestFactory.CreateConfig(ECoreType.Xray);
