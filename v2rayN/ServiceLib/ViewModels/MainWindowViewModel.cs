@@ -583,6 +583,8 @@ public partial class MainWindowViewModel : MyReactiveObject
             RxSchedulers.MainThreadScheduler.Schedule(async () =>
             {
                 await StatusBarViewModel.InboundDisplayStatus();
+                // the WARP mode decides what the status bar shows as the running server
+                await StatusBarViewModel.RefreshServersBiz();
             });
             await Reload();
         }

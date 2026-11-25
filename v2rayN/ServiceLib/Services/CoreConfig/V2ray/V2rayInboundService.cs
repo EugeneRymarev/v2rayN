@@ -99,12 +99,16 @@ public partial class CoreConfigV2rayService
                     tunInbound.settings.autoSystemDnsToGateway = true;
                 }
 
-                if (_config.TunModeItem.RouteExcludeAddress is { Count: > 0 })
+                var routeExcludeAddress = (_config.TunModeItem.RouteExcludeAddress ?? [])
+                    .Concat(WarpService.GetTunExcludeAddresses(_config.WarpItem))
+                    .Distinct()
+                    .ToList();
+                if (routeExcludeAddress.Count > 0)
                 {
                     var wholeInternet = IPNetwork2.Parse("0.0.0.0/0");
                     var wholeInternetV6 = IPNetwork2.Parse("::/0");
 
-                    var excludeList = _config.TunModeItem.RouteExcludeAddress.Select(IPNetwork2.Parse)
+                    var excludeList = routeExcludeAddress.Select(IPNetwork2.Parse)
                         .Where(x => x != null).ToList();
 
                     var includeList = new List<IPNetwork2> { wholeInternet };

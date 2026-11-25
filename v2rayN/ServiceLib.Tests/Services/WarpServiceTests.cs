@@ -215,6 +215,36 @@ public class WarpServiceTests
 
         var tun = cfg.inbounds.First(i => i.type == "tun");
         await tun.address!.Should().HaveCount(2);
+        // the WARP endpoint must not loop back into TUN
+        await tun.route_exclude_address!.Should().Contain($"{config.WarpItem.EndpointHost}/32");
+    }
+
+    [Test]
+    public async Task Xray_WarpTun_ShouldKeepEndpointOutOfTunnel()
+    {
+        var config = CoreConfigTestFactory.CreateConfigWithTun(ECoreType.Xray, enableIPv6Address: false);
+        config.WarpItem = SampleAccount(EWarpMode.WarpOnly);
+        CoreConfigTestFactory.BindAppManagerConfig(config);
+        var node = WarpService.CreateTransportNode(config.WarpItem);
+        var context = CoreConfigTestFactory.CreateContext(config, node, ECoreType.Xray);
+
+        var result = new CoreConfigV2rayService(context).GenerateClientConfigContent();
+        await result.Success.Should().BeTrue();
+        var cfg = JsonUtils.Deserialize<V2rayConfig>(result.Data!.ToString())!;
+
+        var routes = cfg.inbounds.First(i => i.protocol == "tun").settings.autoSystemRoutingTable!;
+        await routes.Contains("0.0.0.0/0").Should().BeFalse();
+        var endpoint = System.Net.IPAddress.Parse(config.WarpItem.EndpointHost!);
+        var covered = routes.Select(IPNetwork2.Parse).Any(n => n.Contains(endpoint));
+        await covered.Should().BeFalse();
+    }
+
+    [Test]
+    public async Task GetTunExcludeAddresses_ShouldFollowMode()
+    {
+        await WarpService.GetTunExcludeAddresses(SampleAccount(EWarpMode.Off)).Count.Should().BeEqualTo(0);
+        await WarpService.GetTunExcludeAddresses(SampleAccount(EWarpMode.All)).Should().Contain("162.159.192.7/32");
+        await WarpService.GetTunExcludeAddresses(null).Count.Should().BeEqualTo(0);
     }
 
     private static V2rayConfig GenerateXray(EWarpMode mode, string serverAddress)

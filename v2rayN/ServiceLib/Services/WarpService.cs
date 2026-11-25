@@ -300,6 +300,19 @@ public static class WarpService
     }
 
     /// <summary>
+    /// Addresses that must stay outside TUN: the WARP endpoint itself. Without this the core's own
+    /// WireGuard packets are captured by TUN and sent back into the core, so nothing gets through.
+    /// </summary>
+    public static List<string> GetTunExcludeAddresses(WarpItem? account)
+    {
+        if (account == null || account.Mode == EWarpMode.Off || !HasAccount(account))
+        {
+            return [];
+        }
+        return Utils.IsIpv4(account.EndpointHost) ? [$"{account.EndpointHost}/32"] : [];
+    }
+
+    /// <summary>
     /// Whether a proxy server at <paramref name="serverAddress" /> should be dialed through WARP.
     /// </summary>
     public static bool ShouldDialThroughWarp(WarpItem? account, string? serverAddress)
