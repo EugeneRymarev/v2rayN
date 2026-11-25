@@ -2002,7 +2002,7 @@ The "Get Certificate" action may fail if a self-signed certificate is used or if
     <value>WARP address chosen: {0}:{1} ({2} ms)</value>
   </data>
   <data name="MsgWarpEndpointNotFound" xml:space="preserve">
-    <value>No WARP address answered. Your network may block WireGuard; use the chain 'server → WARP' instead.</value>
+    <value>No WARP address answered. Your network may be blocking WireGuard.</value>
   </data>
   <data name="TbWarpSettings" xml:space="preserve">
     <value>WARP (IPv6)</value>
@@ -2019,8 +2019,11 @@ The "Get Certificate" action may fail if a self-signed certificate is used or if
   <data name="TbWarpModeAll" xml:space="preserve">
     <value>All servers</value>
   </data>
+  <data name="TbWarpModeWarpOnly" xml:space="preserve">
+    <value>Everything through WARP, without a server</value>
+  </data>
   <data name="TbWarpTips" xml:space="preserve">
-    <value>WARP is a free Cloudflare network. v2rayN first connects to WARP over IPv4 and then to your server through it, so servers with an IPv6 address work even if your internet provider has no IPv6.</value>
+    <value>WARP is a free Cloudflare network. v2rayN first connects to WARP over IPv4 and then to your server through it, so servers with an IPv6 address work even if your internet provider has no IPv6. With 'Everything through WARP' no server is needed: WARP itself is the exit. Turn on TUN to send all programs on the computer this way.</value>
   </data>
   <data name="TbWarpAccount" xml:space="preserve">
     <value>WARP account</value>

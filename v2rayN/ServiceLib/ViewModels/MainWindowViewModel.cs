@@ -680,7 +680,7 @@ public partial class MainWindowViewModel : MyReactiveObject
                     TabMainSelectedIndex = 0;
                 }
             });
-            var profileItem = await ConfigTextHandler.GetDefaultServer();
+            var profileItem = await WarpService.GetNodeToRunAsync(_config);
             if (profileItem == null)
             {
                 NoticeManager.Instance.Enqueue(ResUI.CheckServerSettings);
@@ -701,7 +701,7 @@ public partial class MainWindowViewModel : MyReactiveObject
             RxSchedulers.MainThreadScheduler.Schedule(async () =>
             {
                 var result = await StatusBarViewModel.TestServerAvailability();
-                if (result == null || profileItem.IndexId.IsNullOrEmpty())
+                if (result == null || profileItem.IndexId.IsNullOrEmpty() || profileItem.IndexId == WarpService.TransportIndexId)
                 {
                     return;
                 }

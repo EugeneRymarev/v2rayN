@@ -1984,7 +1984,7 @@
     <value>Выбран адрес WARP: {0}:{1} ({2} мс)</value>
   </data>
   <data name="MsgWarpEndpointNotFound" xml:space="preserve">
-    <value>Ни один адрес WARP не ответил. Возможно, ваша сеть мешает WireGuard: используйте цепочку «сервер → WARP».</value>
+    <value>Ни один адрес WARP не ответил. Возможно, ваша сеть мешает WireGuard.</value>
   </data>
   <data name="TbWarpSettings" xml:space="preserve">
     <value>WARP (IPv6)</value>
@@ -2001,8 +2001,11 @@
   <data name="TbWarpModeAll" xml:space="preserve">
     <value>Ко всем серверам</value>
   </data>
+  <data name="TbWarpModeWarpOnly" xml:space="preserve">
+    <value>Всё через WARP, без сервера</value>
+  </data>
   <data name="TbWarpTips" xml:space="preserve">
-    <value>WARP — бесплатная сеть Cloudflare. v2rayN сначала подключается к WARP по IPv4, а уже через него к вашему серверу. Так серверы с IPv6-адресом работают, даже если у провайдера нет IPv6.</value>
+    <value>WARP — бесплатная сеть Cloudflare. v2rayN сначала подключается к WARP по IPv4, а уже через него к вашему серверу. Так серверы с IPv6-адресом работают, даже если у провайдера нет IPv6. В режиме «Всё через WARP» сервер не нужен: выходом в интернет служит сам WARP. Включите TUN, чтобы так работали все программы на компьютере.</value>
   </data>
   <data name="TbWarpAccount" xml:space="preserve">
     <value>Аккаунт WARP</value>
