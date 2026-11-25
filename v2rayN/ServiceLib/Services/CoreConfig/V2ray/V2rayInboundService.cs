@@ -172,7 +172,9 @@ public partial class CoreConfigV2rayService
         inbound.settings.udp = inItem.UdpEnabled;
         inbound.sniffing.enabled = inItem.SniffingEnabled;
         inbound.sniffing.destOverride = inItem.DestOverride;
-        inbound.sniffing.routeOnly = inItem.RouteOnly;
+        // With WARP as the exit a sniffed domain would replace the real address, so an app that
+        // fakes the TLS name (e.g. an MTProxy "ee" secret) would be sent to the wrong host.
+        inbound.sniffing.routeOnly = inItem.RouteOnly || WarpService.IsWarpOnly(_config.WarpItem);
 
         if (_config.SimpleDNSItem.FakeIP == true)
         {

@@ -160,6 +160,8 @@ public class WarpServiceTests
         var proxy = cfg.outbounds.First(o => o.tag == Global.ProxyTag);
         await proxy.protocol.Should().BeEqualTo("wireguard");
         await cfg.outbounds.Any(o => o.tag == WarpService.TransportTag).Should().BeFalse();
+        // sniffed names must not replace the real destination
+        await cfg.inbounds.All(i => i.sniffing?.routeOnly != false).Should().BeTrue();
     }
 
     [Test]
