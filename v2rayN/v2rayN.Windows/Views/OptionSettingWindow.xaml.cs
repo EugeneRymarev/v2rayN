@@ -48,6 +48,7 @@ public partial class OptionSettingWindow
         cmbMixedConcurrencyCount.ItemsSource = Enumerable.Range(Global.SpeedTestConcurrencyCountMin, 20).ToList();
         cmbSpeedTestTimeout.ItemsSource = Enumerable.Range(2, 5).Select(i => i * 5).ToList();
         cmbSpeedTestUrl.ItemsSource = Global.SpeedTestUrls;
+        cmbWarpMode.ItemsSource = new List<string> { ResUI.TbWarpModeOff, ResUI.TbWarpModeIpv6, ResUI.TbWarpModeAll, ResUI.TbWarpModeWarpOnly };
         cmbSpeedPingTestUrl.ItemsSource = Global.SpeedPingTestUrls;
         cmbUdpTestTarget.ItemsSource = Global.UdpTestTargets;
         cmbSubConvertUrl.ItemsSource = Global.SubConvertUrls;
@@ -148,6 +149,10 @@ public partial class OptionSettingWindow
             this.Bind(ViewModel, vm => vm.CoreType14, v => v.cmbCoreType14.Text).DisposeWith(disposables);
 
             this.BindCommand(ViewModel, vm => vm.SaveCmd, v => v.btnSave).DisposeWith(disposables);
+            this.Bind(ViewModel, vm => vm.WarpModeIndex, v => v.cmbWarpMode.SelectedIndex).DisposeWith(disposables);
+            this.OneWayBind(ViewModel, vm => vm.WarpStatus, v => v.txtWarpStatus.Text).DisposeWith(disposables);
+            this.BindCommand(ViewModel, vm => vm.WarpRegisterCmd, v => v.btnWarpRegister).DisposeWith(disposables);
+            this.BindCommand(ViewModel, vm => vm.WarpSelectEndpointCmd, v => v.btnWarpSelectEndpoint).DisposeWith(disposables);
         });
         WindowsUtils.SetDarkBorder(this, ConfigTextHandler.Config.UiItem.CurrentTheme);
     }

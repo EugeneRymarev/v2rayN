@@ -8,6 +8,7 @@ public sealed class AppManager
     private static Config CurrentConfig => ConfigState.Instance.Current;
     private int? _statePort;
     private int? _statePort2;
+    private int? _warpIPv6Port;
     public static AppManager Instance => _instance.Value;
     public IWindowDialog WindowDialog { get; set; } = null!;
 
@@ -26,6 +27,15 @@ public sealed class AppManager
         {
             _statePort2 ??= Utils.GetFreePort(GetLocalPort(EInboundProtocol.api2));
             return _statePort2.Value + (CurrentConfig.TunModeItem.EnableTun ? 1 : 0);
+        }
+    }
+
+    public int WarpIPv6Port
+    {
+        get
+        {
+            _warpIPv6Port ??= Utils.GetFreePort(GetLocalPort(EInboundProtocol.socks) + 7);
+            return _warpIPv6Port.Value;
         }
     }
 

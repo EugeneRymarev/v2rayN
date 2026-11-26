@@ -69,11 +69,15 @@ public partial class CoreConfigV2rayService
                 tunInbound.settings.gateway = [address];
                 // Without ::/0, IPv6 bypasses the tunnel. Skip it only when the host has no global IPv6
                 // address and EnableIPv6Address is off; NAT66 hosts have only ULA addresses.
-                var routeIPv6 = _config.TunModeItem.EnableIPv6Address || context.HasGlobalIPv6Address;
+                // IPv6 may come from WARP
+                var tunIPv6 = _config.TunModeItem.EnableIPv6Address
+                              || WarpService.IsWarpOnly(_config.WarpItem)
+                              || WarpService.ShouldRouteIPv6(_config.WarpItem, context.HasGlobalIPv6Address);
+                var routeIPv6 = tunIPv6 || context.HasGlobalIPv6Address;
                 tunInbound.settings.autoSystemRoutingTable = routeIPv6
                     ? ["0.0.0.0/0", "::/0"]
                     : ["0.0.0.0/0"];
-                if (_config.TunModeItem.EnableIPv6Address == true)
+                if (tunIPv6)
                 {
                     var address6 = _config.TunModeItem.IPv6Address.NullIfEmpty() ?? Global.TunIPv6Address.First();
                     tunInbound.settings.gateway.Add(address6);
@@ -97,12 +101,16 @@ public partial class CoreConfigV2rayService
                     tunInbound.settings.autoSystemDnsToGateway = true;
                 }
 
-                if (_config.TunModeItem.RouteExcludeAddress is { Count: > 0 })
+                var routeExcludeAddress = (_config.TunModeItem.RouteExcludeAddress ?? [])
+                    .Concat(WarpService.GetTunExcludeAddresses(_config.WarpItem))
+                    .Distinct()
+                    .ToList();
+                if (routeExcludeAddress.Count > 0)
                 {
                     var wholeInternet = IPNetwork2.Parse("0.0.0.0/0");
                     var wholeInternetV6 = IPNetwork2.Parse("::/0");
 
-                    var excludeList = _config.TunModeItem.RouteExcludeAddress.Select(IPNetwork2.Parse)
+                    var excludeList = routeExcludeAddress.Select(IPNetwork2.Parse)
                         .Where(x => x != null).ToList();
 
                     var includeList = new List<IPNetwork2> { wholeInternet };
@@ -140,6 +148,17 @@ public partial class CoreConfigV2rayService
 
                 _coreConfig.inbounds.Add(tunInbound);
             }
+
+            if (UsesWarpIPv6Inbound())
+            {
+                var warpInbound = BuildInbound(inboundConf, EInboundProtocol.socks, true);
+                warpInbound.tag = WarpService.IPv6InboundTag;
+                warpInbound.port = AppManager.Instance.WarpIPv6Port;
+                warpInbound.listen = Global.Loopback;
+                // routed by inbound, keep the real address
+                warpInbound.sniffing.enabled = false;
+                _coreConfig.inbounds.Add(warpInbound);
+            }
         }
         catch (Exception ex)
         {
@@ -166,7 +185,8 @@ public partial class CoreConfigV2rayService
         inbound.settings.udp = inItem.UdpEnabled;
         inbound.sniffing.enabled = inItem.SniffingEnabled;
         inbound.sniffing.destOverride = inItem.DestOverride;
-        inbound.sniffing.routeOnly = inItem.RouteOnly;
+        // with WARP as the exit a fake TLS name (MTProxy "ee" secret) must not replace the address
+        inbound.sniffing.routeOnly = inItem.RouteOnly || WarpService.IsWarpOnly(_config.WarpItem);
 
         if (_config.SimpleDNSItem.FakeIP == true)
         {

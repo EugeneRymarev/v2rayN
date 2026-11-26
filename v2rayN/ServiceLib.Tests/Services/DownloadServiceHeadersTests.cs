@@ -158,6 +158,14 @@ public class DownloadServiceHeadersTests
             catch (OperationCanceledException)
             {
             }
+            // Stopping the listener can win the race with cancellation; the pending accept
+            // then fails with ObjectDisposedException (seen on Windows) or SocketException.
+            catch (ObjectDisposedException)
+            {
+            }
+            catch (SocketException)
+            {
+            }
             finally
             {
                 _cancellation.Dispose();
