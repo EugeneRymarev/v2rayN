@@ -1830,4 +1830,13 @@ Tindakan "Ambil sertifikat" mungkin gagal jika sertifikat self-signed digunakan 
   <data name="TransportPathTip6" xml:space="preserve">
     <value>Folder jarak jauh XDRIVE</value>
   </data>
+  <data name="menuRoutingImportFromClipboard" xml:space="preserve">
+    <value>Impor set aturan dari clipboard</value>
+  </data>
+  <data name="menuRoutingExportSelected" xml:space="preserve">
+    <value>Ekspor set aturan yang dipilih ke clipboard</value>
+  </data>
+  <data name="RoutingImportedRemarks" xml:space="preserve">
+    <value>Diimpor</value>
+  </data>
 </root>

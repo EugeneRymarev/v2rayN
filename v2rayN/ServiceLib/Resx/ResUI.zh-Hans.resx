@@ -2032,4 +2032,13 @@
   <data name="MsgWarpNoAccount" xml:space="preserve">
     <value>请先创建 WARP 账户</value>
   </data>
+  <data name="menuRoutingImportFromClipboard" xml:space="preserve">
+    <value>从剪贴板导入规则集</value>
+  </data>
+  <data name="menuRoutingExportSelected" xml:space="preserve">
+    <value>导出所选规则集至剪贴板</value>
+  </data>
+  <data name="RoutingImportedRemarks" xml:space="preserve">
+    <value>已导入</value>
+  </data>
 </root>

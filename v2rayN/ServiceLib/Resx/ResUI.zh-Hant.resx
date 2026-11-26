@@ -1990,4 +1990,13 @@
   <data name="MsgCheckUpdateViaGitRefsFailed" xml:space="preserve">
     <value>{0} 的 git 參照無法使用</value>
   </data>
+  <data name="menuRoutingImportFromClipboard" xml:space="preserve">
+    <value>從剪貼簿匯入規則集</value>
+  </data>
+  <data name="menuRoutingExportSelected" xml:space="preserve">
+    <value>匯出所選規則集至剪貼簿</value>
+  </data>
+  <data name="RoutingImportedRemarks" xml:space="preserve">
+    <value>已匯入</value>
+  </data>
 </root>

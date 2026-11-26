@@ -1809,4 +1809,13 @@ The "Get Certificate" action may fail if a self-signed certificate is used or if
   <data name="TransportPathTip6" xml:space="preserve">
     <value>پوشه ریموت XDRIVE</value>
   </data>
+  <data name="menuRoutingImportFromClipboard" xml:space="preserve">
+    <value>وارد کردن مجموعه قوانین از کلیپ‌بورد</value>
+  </data>
+  <data name="menuRoutingExportSelected" xml:space="preserve">
+    <value>صادر کردن مجموعه قوانین انتخاب شده به کلیپ‌بورد</value>
+  </data>
+  <data name="RoutingImportedRemarks" xml:space="preserve">
+    <value>وارد شده</value>
+  </data>
 </root>

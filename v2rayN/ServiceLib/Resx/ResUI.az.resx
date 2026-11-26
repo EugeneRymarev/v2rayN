@@ -1935,4 +1935,13 @@ Təyin edildikdə sertifikat sabitlənəcək və "Təhlükəsiz olmayan əlaqəy
   <data name="TransportPathTip6" xml:space="preserve">
     <value>XDRIVE uzaqdakı qovluq</value>
   </data>
+  <data name="menuRoutingImportFromClipboard" xml:space="preserve">
+    <value>Qayda dəstlərini buferdən idxal et</value>
+  </data>
+  <data name="menuRoutingExportSelected" xml:space="preserve">
+    <value>Seçilmiş qayda dəstlərini buferə ixrac et</value>
+  </data>
+  <data name="RoutingImportedRemarks" xml:space="preserve">
+    <value>İdxal edilmiş</value>
+  </data>
 </root>

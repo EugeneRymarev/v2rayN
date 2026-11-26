@@ -1806,4 +1806,13 @@ The "Get Certificate" action may fail if a self-signed certificate is used or if
   <data name="TransportPathTip6" xml:space="preserve">
     <value>XDRIVE távoli mappa</value>
   </data>
+  <data name="menuRoutingImportFromClipboard" xml:space="preserve">
+    <value>Szabálykészletek importálása a vágólapról</value>
+  </data>
+  <data name="menuRoutingExportSelected" xml:space="preserve">
+    <value>Kijelölt szabálykészletek exportálása a vágólapra</value>
+  </data>
+  <data name="RoutingImportedRemarks" xml:space="preserve">
+    <value>Importált</value>
+  </data>
 </root>

@@ -1803,4 +1803,13 @@ The "Get Certificate" action may fail if a self-signed certificate is used or if
   <data name="TransportPathTip6" xml:space="preserve">
     <value>Dossier distant XDRIVE</value>
   </data>
+  <data name="menuRoutingImportFromClipboard" xml:space="preserve">
+    <value>Importer des jeux de règles depuis le presse-papiers</value>
+  </data>
+  <data name="menuRoutingExportSelected" xml:space="preserve">
+    <value>Exporter les jeux de règles sélectionnés vers le presse-papiers</value>
+  </data>
+  <data name="RoutingImportedRemarks" xml:space="preserve">
+    <value>Importé</value>
+  </data>
 </root>

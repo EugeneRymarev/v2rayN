@@ -29,12 +29,28 @@ public partial class RoutingSettingWindow
             this.BindCommand(ViewModel, vm => vm.RoutingAdvancedSetDefaultCmd, v => v.menuRoutingAdvancedSetDefault).DisposeWith(disposables);
             this.BindCommand(ViewModel, vm => vm.RoutingAdvancedImportRulesCmd, v => v.menuRoutingAdvancedImportRules).DisposeWith(disposables);
             this.BindCommand(ViewModel, vm => vm.RoutingAdvancedImportRulesCmd, v => v.menuRoutingAdvancedImportRules2).DisposeWith(disposables);
+            this.BindCommand(ViewModel, vm => vm.RoutingImportFromClipboardCmd, v => v.menuRoutingImportFromClipboard).DisposeWith(disposables);
+            this.BindCommand(ViewModel, vm => vm.RoutingImportFromClipboardCmd, v => v.menuRoutingImportFromClipboard2).DisposeWith(disposables);
+            this.BindCommand(ViewModel, vm => vm.RoutingExportSelectedCmd, v => v.menuRoutingExportSelected).DisposeWith(disposables);
+            this.BindCommand(ViewModel, vm => vm.RoutingExportSelectedCmd, v => v.menuRoutingExportSelected2).DisposeWith(disposables);
 
             ViewModel.ShowYesNoInteraction.RegisterHandler(interaction =>
             {
                 var message = interaction.Input;
                 var result = UI.ShowYesNo(message) != MessageBoxResult.No;
                 interaction.SetOutput(result);
+            }).DisposeWith(disposables);
+
+            ViewModel.SetClipboardDataInteraction.RegisterHandler(interaction =>
+            {
+                WindowsUtils.SetClipboardData(interaction.Input);
+                interaction.SetOutput(RxVoid.Default);
+            }).DisposeWith(disposables);
+
+            ViewModel.ReadTextFromClipboardInteraction.RegisterHandler(interaction =>
+            {
+                var clipboardData = WindowsUtils.GetClipboardData();
+                interaction.SetOutput(clipboardData);
             }).DisposeWith(disposables);
         });
         WindowsUtils.SetDarkBorder(this, ConfigTextHandler.Config.UiItem.CurrentTheme);
@@ -57,6 +73,14 @@ public partial class RoutingSettingWindow
             {
                 case Key.A:
                     lstRoutings.SelectAll();
+                    break;
+
+                case Key.C when lstRoutings.IsKeyboardFocusWithin:
+                    ViewModel?.RoutingExportSelectedAsync();
+                    break;
+
+                case Key.V when lstRoutings.IsKeyboardFocusWithin:
+                    ViewModel?.RoutingImportFromClipboardAsync(null);
                     break;
             }
         }
