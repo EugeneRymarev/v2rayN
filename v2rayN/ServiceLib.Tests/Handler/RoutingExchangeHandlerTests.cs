@@ -50,7 +50,7 @@ public class RoutingExchangeHandlerTests
         var item = items[0];
         await item.Remarks.Should().BeEqualTo("Мой набор");
         await item.Id.IsNullOrEmpty().Should().BeFalse();
-        await item.Id.Should().IsNotEqualTo("routing-1");
+        await (item.Id == "routing-1").Should().BeFalse();
         await item.IsActive.Should().BeFalse();
         await item.Locked.Should().BeFalse();
         await item.RuleNum.Should().BeEqualTo(2);
