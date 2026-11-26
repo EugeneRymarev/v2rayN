@@ -1724,7 +1724,7 @@ namespace ServiceLib.Resx {
                 return ResourceManager.GetString("menuRoutingImportFromClipboard", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Export Selected Rule Sets to Clipboard 的本地化字符串。
         /// </summary>
@@ -1733,7 +1733,7 @@ namespace ServiceLib.Resx {
                 return ResourceManager.GetString("menuRoutingExportSelected", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Imported 的本地化字符串。
         /// </summary>
@@ -1742,7 +1742,7 @@ namespace ServiceLib.Resx {
                 return ResourceManager.GetString("RoutingImportedRemarks", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   查找类似 Export Selected Rules 的本地化字符串。
         /// </summary>
