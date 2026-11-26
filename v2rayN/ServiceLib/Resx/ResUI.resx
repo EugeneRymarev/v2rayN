@@ -2043,4 +2043,13 @@ The "Get Certificate" action may fail if a self-signed certificate is used or if
   <data name="MsgWarpNoAccount" xml:space="preserve">
     <value>Create a WARP account first</value>
   </data>
+  <data name="menuRoutingImportFromClipboard" xml:space="preserve">
+    <value>Import Rule Sets from Clipboard</value>
+  </data>
+  <data name="menuRoutingExportSelected" xml:space="preserve">
+    <value>Export Selected Rule Sets to Clipboard</value>
+  </data>
+  <data name="RoutingImportedRemarks" xml:space="preserve">
+    <value>Imported</value>
+  </data>
 </root>

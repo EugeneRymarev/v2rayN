@@ -2025,4 +2025,13 @@
   <data name="MsgWarpNoAccount" xml:space="preserve">
     <value>Сначала создайте аккаунт WARP</value>
   </data>
+  <data name="menuRoutingImportFromClipboard" xml:space="preserve">
+    <value>Импорт наборов правил из буфера обмена</value>
+  </data>
+  <data name="menuRoutingExportSelected" xml:space="preserve">
+    <value>Экспорт выбранных наборов правил в буфер обмена</value>
+  </data>
+  <data name="RoutingImportedRemarks" xml:space="preserve">
+    <value>Импортированный</value>
+  </data>
 </root>
