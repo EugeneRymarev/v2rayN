@@ -23,7 +23,8 @@ public partial class CoreConfigV2rayService
                         && (o.streamSettings?.sockopt?.dialerProxy.IsNullOrEmpty() ?? true)
                         && WarpService.ShouldDialThroughWarp(account, GetOutboundServerAddress(o)))
             .ToList();
-        if (targets.Count == 0)
+        var routeIPv6 = WarpService.ShouldRouteIPv6(account, context.HasGlobalIPv6Address);
+        if (targets.Count == 0 && !routeIPv6)
         {
             return;
         }
@@ -36,6 +37,50 @@ public partial class CoreConfigV2rayService
             FillDialerProxy(outbound, WarpService.TransportTag);
         }
         _coreConfig.outbounds.Add(warpOutbound);
+    }
+
+    /// <summary>
+    /// True when the sing-box TUN core runs in front of this config: it hands IPv6 over to the
+    /// <see cref="WarpService.IPv6InboundTag" /> inbound.
+    /// </summary>
+    private bool UsesWarpIPv6Inbound()
+    {
+        return !context.IsTunEnabled
+               && _config.TunModeItem.EnableTun
+               && _config.TunModeItem.EnableLegacyProtect
+               && WarpService.ShouldRouteIPv6(_config.WarpItem, context.HasGlobalIPv6Address);
+    }
+
+    /// <summary>
+    /// Sends IPv6 that came from TUN through WARP: the host has no IPv6, so the routing rules
+    /// could only send it directly, where it fails. Only traffic from TUN is matched, because its
+    /// destination is always an address; a domain from a proxy client would be resolved instead.
+    /// </summary>
+    private void GenWarpIPv6Rules()
+    {
+        if (_coreConfig.routing?.rules == null
+            || !WarpService.ShouldRouteIPv6(_config.WarpItem, context.HasGlobalIPv6Address))
+        {
+            return;
+        }
+        var outboundTag = WarpService.GetIPv6OutboundTag(_config.WarpItem);
+        if (UsesWarpIPv6Inbound())
+        {
+            _coreConfig.routing.rules.Add(new()
+            {
+                inboundTag = [WarpService.IPv6InboundTag],
+                outboundTag = outboundTag,
+            });
+        }
+        if (context.IsTunEnabled)
+        {
+            _coreConfig.routing.rules.Add(new()
+            {
+                inboundTag = ["tun"],
+                ip = [WarpService.GlobalIPv6Prefix],
+                outboundTag = outboundTag,
+            });
+        }
     }
 
     internal static string? GetOutboundServerAddress(Outbounds4Ray outbound)

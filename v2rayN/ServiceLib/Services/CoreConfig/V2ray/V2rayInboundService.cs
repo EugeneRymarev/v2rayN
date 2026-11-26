@@ -70,7 +70,10 @@ public partial class CoreConfigV2rayService
                 // Without ::/0, IPv6 bypasses the tunnel. Skip it only when the host has no global IPv6
                 // address and EnableIPv6Address is off; NAT66 hosts have only ULA addresses.
                 // In "everything through WARP" mode IPv6 comes from WARP, so the tunnel must carry it.
-                var tunIPv6 = _config.TunModeItem.EnableIPv6Address || WarpService.IsWarpOnly(_config.WarpItem);
+                // With WARP on and no IPv6 on the host, IPv6 comes from WARP too.
+                var tunIPv6 = _config.TunModeItem.EnableIPv6Address
+                              || WarpService.IsWarpOnly(_config.WarpItem)
+                              || WarpService.ShouldRouteIPv6(_config.WarpItem, context.HasGlobalIPv6Address);
                 var routeIPv6 = tunIPv6 || context.HasGlobalIPv6Address;
                 tunInbound.settings.autoSystemRoutingTable = routeIPv6
                     ? ["0.0.0.0/0", "::/0"]
@@ -145,6 +148,17 @@ public partial class CoreConfigV2rayService
                 }
 
                 _coreConfig.inbounds.Add(tunInbound);
+            }
+
+            if (UsesWarpIPv6Inbound())
+            {
+                var warpInbound = BuildInbound(inboundConf, EInboundProtocol.socks, true);
+                warpInbound.tag = WarpService.IPv6InboundTag;
+                warpInbound.port = AppManager.Instance.WarpIPv6Port;
+                warpInbound.listen = Global.Loopback;
+                // keep the real address: the traffic is routed by its inbound, not by a sniffed name
+                warpInbound.sniffing.enabled = false;
+                _coreConfig.inbounds.Add(warpInbound);
             }
         }
         catch (Exception ex)

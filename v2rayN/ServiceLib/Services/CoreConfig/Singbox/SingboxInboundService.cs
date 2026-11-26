@@ -74,8 +74,10 @@ public partial class CoreConfigSingboxService
 
                 var address = _config.TunModeItem.IPv4Address.NullIfEmpty() ?? Global.TunIPv4Address.First();
                 tunInbound.address = [address];
-                // In "everything through WARP" mode IPv6 comes from WARP, so the tunnel must carry it.
-                if (_config.TunModeItem.EnableIPv6Address || WarpService.IsWarpOnly(_config.WarpItem))
+                // When IPv6 comes from WARP, the tunnel must carry it.
+                if (_config.TunModeItem.EnableIPv6Address
+                    || WarpService.IsWarpOnly(_config.WarpItem)
+                    || WarpService.ShouldRouteIPv6(_config.WarpItem, context.HasGlobalIPv6Address))
                 {
                     var address6 = _config.TunModeItem.IPv6Address.NullIfEmpty() ?? Global.TunIPv6Address.First();
                     tunInbound.address.Add(address6);

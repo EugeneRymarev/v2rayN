@@ -249,6 +249,115 @@ public class WarpServiceTests
         await WarpService.GetTunExcludeAddresses(null).Count.Should().BeEqualTo(0);
     }
 
+    [Test]
+    public async Task ShouldRouteIPv6_ShouldNeedWarpAndNoHostIPv6()
+    {
+        await WarpService.ShouldRouteIPv6(SampleAccount(EWarpMode.Ipv6Only), false).Should().BeTrue();
+        await WarpService.ShouldRouteIPv6(SampleAccount(EWarpMode.WarpOnly), false).Should().BeTrue();
+        await WarpService.ShouldRouteIPv6(SampleAccount(EWarpMode.Ipv6Only), true).Should().BeFalse();
+        await WarpService.ShouldRouteIPv6(SampleAccount(EWarpMode.Off), false).Should().BeFalse();
+        await WarpService.GetIPv6OutboundTag(SampleAccount(EWarpMode.All)).Should().BeEqualTo(WarpService.TransportTag);
+        await WarpService.GetIPv6OutboundTag(SampleAccount(EWarpMode.WarpOnly)).Should().BeEqualTo(Global.ProxyTag);
+    }
+
+    [Test]
+    public async Task Singbox_TunInFrontOfXray_ShouldHandIPv6ToXray()
+    {
+        var config = CoreConfigTestFactory.CreateConfigWithTun(ECoreType.Xray, enableIPv6Address: false);
+        config.WarpItem = SampleAccount(EWarpMode.Ipv6Only);
+        CoreConfigTestFactory.BindAppManagerConfig(config);
+        var node = new ProfileItem
+        {
+            CoreType = ECoreType.sing_box,
+            ConfigType = EConfigType.SOCKS,
+            Address = Global.Loopback,
+            Port = AppManager.Instance.GetLocalPort(EInboundProtocol.socks),
+        };
+        var context = CoreConfigTestFactory.CreateContext(config, node, ECoreType.sing_box, hasGlobalIPv6Address: false);
+
+        var result = new CoreConfigSingboxService(context).GenerateClientConfigContent();
+        await result.Success.Should().BeTrue();
+        var cfg = JsonUtils.Deserialize<SingboxConfig>(result.Data!.ToString())!;
+
+        await cfg.inbounds.First(i => i.type == "tun").address!.Should().HaveCount(2);
+        var link = cfg.outbounds.First(o => o.tag == WarpService.IPv6OutboundTag);
+        await link.type.Should().BeEqualTo("socks");
+        await link.server_port.Should().BeEqualTo(AppManager.Instance.WarpIPv6Port);
+        var rule = cfg.route.rules.First(r => r.ip_cidr?.Contains(WarpService.GlobalIPv6Prefix) == true);
+        await rule.outbound.Should().BeEqualTo(WarpService.IPv6OutboundTag);
+        // xray behind it owns the WARP connection
+        await (cfg.endpoints?.Any(e => e.tag == WarpService.TransportTag) ?? false).Should().BeFalse();
+    }
+
+    [Test]
+    public async Task Xray_BehindTun_ShouldSendIPv6FromTunThroughWarp()
+    {
+        var config = CoreConfigTestFactory.CreateConfigWithTun(ECoreType.Xray, enableIPv6Address: false);
+        config.WarpItem = SampleAccount(EWarpMode.Ipv6Only);
+        CoreConfigTestFactory.BindAppManagerConfig(config);
+        var server = CoreConfigTestFactory.CreateSocksNode(ECoreType.Xray, "srv", "server");
+        server.Address = "1.2.3.4";
+        var context = CoreConfigTestFactory.CreateContext(config, server, ECoreType.Xray, hasGlobalIPv6Address: false)
+            with { IsTunEnabled = false };
+
+        var result = new CoreConfigV2rayService(context).GenerateClientConfigContent();
+        await result.Success.Should().BeTrue();
+        var cfg = JsonUtils.Deserialize<V2rayConfig>(result.Data!.ToString())!;
+
+        var inbound = cfg.inbounds.First(i => i.tag == WarpService.IPv6InboundTag);
+        await inbound.port.Should().BeEqualTo(AppManager.Instance.WarpIPv6Port);
+        await inbound.listen.Should().BeEqualTo(Global.Loopback);
+        await inbound.sniffing.enabled.Should().BeFalse();
+        var rule = cfg.routing.rules.First(r => r.inboundTag?.Contains(WarpService.IPv6InboundTag) == true);
+        await rule.outboundTag.Should().BeEqualTo(WarpService.TransportTag);
+        await cfg.outbounds.Any(o => o.tag == WarpService.TransportTag).Should().BeTrue();
+        // an IPv4 server is still dialed directly
+        var proxy = cfg.outbounds.First(o => o.tag == Global.ProxyTag);
+        await (proxy.streamSettings?.sockopt?.dialerProxy is null).Should().BeTrue();
+    }
+
+    [Test]
+    public async Task Xray_HostWithIPv6_ShouldNotRouteIPv6ThroughWarp()
+    {
+        var config = CoreConfigTestFactory.CreateConfigWithTun(ECoreType.Xray, enableIPv6Address: false);
+        config.WarpItem = SampleAccount(EWarpMode.Ipv6Only);
+        CoreConfigTestFactory.BindAppManagerConfig(config);
+        var server = CoreConfigTestFactory.CreateSocksNode(ECoreType.Xray, "srv", "server");
+        server.Address = "1.2.3.4";
+        var context = CoreConfigTestFactory.CreateContext(config, server, ECoreType.Xray, hasGlobalIPv6Address: true)
+            with { IsTunEnabled = false };
+
+        var result = new CoreConfigV2rayService(context).GenerateClientConfigContent();
+        await result.Success.Should().BeTrue();
+        var cfg = JsonUtils.Deserialize<V2rayConfig>(result.Data!.ToString())!;
+
+        await cfg.inbounds.Any(i => i.tag == WarpService.IPv6InboundTag).Should().BeFalse();
+        await cfg.outbounds.Any(o => o.tag == WarpService.TransportTag).Should().BeFalse();
+    }
+
+    [Test]
+    public async Task Xray_OwnTun_ShouldSendIPv6FromTunThroughWarp()
+    {
+        var config = CoreConfigTestFactory.CreateConfigWithTun(ECoreType.Xray, enableIPv6Address: false);
+        config.TunModeItem.EnableLegacyProtect = false;
+        config.WarpItem = SampleAccount(EWarpMode.All);
+        CoreConfigTestFactory.BindAppManagerConfig(config);
+        var server = CoreConfigTestFactory.CreateSocksNode(ECoreType.Xray, "srv", "server");
+        server.Address = "1.2.3.4";
+        var context = CoreConfigTestFactory.CreateContext(config, server, ECoreType.Xray, hasGlobalIPv6Address: false);
+
+        var result = new CoreConfigV2rayService(context).GenerateClientConfigContent();
+        await result.Success.Should().BeTrue();
+        var cfg = JsonUtils.Deserialize<V2rayConfig>(result.Data!.ToString())!;
+
+        var tun = cfg.inbounds.First(i => i.protocol == "tun");
+        await tun.settings.gateway.Should().HaveCount(2);
+        var rule = cfg.routing.rules.First(r => r.ip?.Contains(WarpService.GlobalIPv6Prefix) == true);
+        await rule.inboundTag!.Should().Contain("tun");
+        await rule.outboundTag.Should().BeEqualTo(WarpService.TransportTag);
+        await cfg.inbounds.Any(i => i.tag == WarpService.IPv6InboundTag).Should().BeFalse();
+    }
+
     private static V2rayConfig GenerateXray(EWarpMode mode, string serverAddress)
     {
         var config = CoreConfigTestFactory.CreateConfig(ECoreType.Xray);

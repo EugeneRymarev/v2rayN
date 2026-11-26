@@ -28,7 +28,10 @@ public partial class CoreConfigSingboxService
                         && s.detour.IsNullOrEmpty()
                         && WarpService.ShouldDialThroughWarp(account, GetServerAddress(s)))
             .ToList();
-        if (targets.Count == 0)
+        // The xray core behind the TUN core has its own WARP; a second connection with the same
+        // key would knock the first one out.
+        var routeIPv6 = WarpService.ShouldRouteIPv6(account, context.HasGlobalIPv6Address) && !IsXrayTunFrontend();
+        if (targets.Count == 0 && !routeIPv6)
         {
             return;
         }
@@ -41,6 +44,52 @@ public partial class CoreConfigSingboxService
             server.detour = WarpService.TransportTag;
         }
         FillRangeProxy([warpServer], _coreConfig, false);
+    }
+
+    /// <summary>
+    /// True when this config only runs TUN and hands traffic to the xray core on the local SOCKS port.
+    /// </summary>
+    private bool IsXrayTunFrontend()
+    {
+        return context.IsTunEnabled
+               && _node.ConfigType == EConfigType.SOCKS
+               && _node.Address == Global.Loopback
+               && _node.Port == AppManager.Instance.GetLocalPort(EInboundProtocol.socks);
+    }
+
+    /// <summary>
+    /// Sends IPv6 through WARP: the host has no IPv6, so the routing rules could only send it
+    /// directly, where it fails. When xray runs behind this TUN core, IPv6 goes to its dedicated
+    /// inbound and xray sends it through WARP.
+    /// </summary>
+    private void GenWarpIPv6Rule()
+    {
+        if (!WarpService.ShouldRouteIPv6(_config.WarpItem, context.HasGlobalIPv6Address))
+        {
+            return;
+        }
+        string outbound;
+        if (IsXrayTunFrontend())
+        {
+            outbound = WarpService.IPv6OutboundTag;
+            _coreConfig.outbounds.Add(new Outbound4Sbox
+            {
+                type = "socks",
+                tag = outbound,
+                server = Global.Loopback,
+                server_port = AppManager.Instance.WarpIPv6Port,
+                version = "5",
+            });
+        }
+        else
+        {
+            outbound = WarpService.GetIPv6OutboundTag(_config.WarpItem);
+        }
+        _coreConfig.route.rules.Add(new()
+        {
+            ip_cidr = [WarpService.GlobalIPv6Prefix],
+            outbound = outbound,
+        });
     }
 
     internal static string? GetServerAddress(BaseServer4Sbox server)

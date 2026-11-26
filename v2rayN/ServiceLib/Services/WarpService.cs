@@ -25,6 +25,17 @@ public static class WarpService
 
     public const string TransportIndexId = "inner-warp-transport";
 
+    /// <summary>All global unicast IPv6 addresses: the public internet without private ranges.</summary>
+    public const string GlobalIPv6Prefix = "2000::/3";
+
+    /// <summary>
+    /// Tags of the local link between the sing-box TUN core and the xray core: sing-box hands IPv6
+    /// over to this xray inbound, and xray sends everything from it through WARP.
+    /// </summary>
+    public const string IPv6InboundTag = "warp-ipv6-in";
+
+    public const string IPv6OutboundTag = "warp-ipv6";
+
     #region account
 
     public static bool HasAccount(WarpItem? item)
@@ -310,6 +321,25 @@ public static class WarpService
             return [];
         }
         return Utils.IsIpv4(account.EndpointHost) ? [$"{account.EndpointHost}/32"] : [];
+    }
+
+    /// <summary>
+    /// Whether IPv6 traffic that the routing rules would send directly must go through WARP instead.
+    /// A host without its own IPv6 cannot send it anywhere else, so an app that connects to an
+    /// IPv6 address (for example a Telegram proxy) would fail.
+    /// </summary>
+    public static bool ShouldRouteIPv6(WarpItem? account, bool hasGlobalIPv6Address)
+    {
+        return !hasGlobalIPv6Address && (IsEnabled(account) || IsWarpOnly(account));
+    }
+
+    /// <summary>
+    /// Outbound that carries IPv6 when <see cref="ShouldRouteIPv6" /> is true. In "everything
+    /// through WARP" mode the main proxy is WARP itself.
+    /// </summary>
+    public static string GetIPv6OutboundTag(WarpItem? account)
+    {
+        return IsWarpOnly(account) ? Global.ProxyTag : TransportTag;
     }
 
     /// <summary>
