@@ -24,6 +24,11 @@ public static class WarpService
 
     public static bool HasAccount(WarpItem? item)
     {
+        return WarpMasqueService.IsMasque(item) ? WarpMasqueService.HasAccount(item) : HasWireGuardAccount(item);
+    }
+
+    public static bool HasWireGuardAccount(WarpItem? item)
+    {
         return item != null
                && item.PrivateKey.IsNotEmpty()
                && item.PeerPublicKey.IsNotEmpty()
@@ -145,6 +150,11 @@ public static class WarpService
 
     public static async Task<RetResult> RegisterToConfigAsync(Config config)
     {
+        if (WarpMasqueService.IsMasque(config.WarpItem))
+        {
+            return await WarpMasqueService.RegisterToConfigAsync(config);
+        }
+
         WarpItem? account = null;
         foreach (var useProxy in new[] { false, true })
         {
@@ -176,6 +186,9 @@ public static class WarpService
         }
 
         account.Mode = config.WarpItem?.Mode ?? EWarpMode.Off;
+        account.Protocol = config.WarpItem?.Protocol ?? EWarpProtocol.WireGuard;
+        account.MasqueEndpoint = config.WarpItem?.MasqueEndpoint;
+        account.MasqueEndpointH2 = config.WarpItem?.MasqueEndpointH2;
         config.WarpItem = account;
         if (await ConfigTextHandler.SaveConfig() != 0)
         {
@@ -209,6 +222,10 @@ public static class WarpService
     public static async Task<RetResult> SelectBestEndpointAsync(Config config)
     {
         var account = config.WarpItem;
+        if (WarpMasqueService.IsMasque(account))
+        {
+            return new RetResult(false, ResUI.MsgWarpMasqueNoScan);
+        }
         if (account == null || !HasAccount(account))
         {
             return new RetResult(false, ResUI.MsgWarpNoAccount);
@@ -229,6 +246,22 @@ public static class WarpService
 
     public static ProfileItem CreateTransportNode(WarpItem account)
     {
+        if (WarpMasqueService.IsMasque(account))
+        {
+            // usque runs next to the core and serves WARP as SOCKS
+            return new ProfileItem
+            {
+                IndexId = TransportIndexId,
+                ConfigType = EConfigType.SOCKS,
+                CoreType = ECoreType.Xray,
+                Remarks = "WARP",
+                Address = Global.Loopback,
+                Port = AppManager.Instance.WarpMasquePort,
+                Subid = string.Empty,
+                IsSub = false,
+            };
+        }
+
         var addresses = new List<string>();
         if (account.AddressV4.IsNotEmpty())
         {
@@ -268,7 +301,8 @@ public static class WarpService
         {
             return [];
         }
-        return Utils.IsIpv4(account.EndpointHost) ? [$"{account.EndpointHost}/32"] : [];
+        var host = WarpMasqueService.IsMasque(account) ? WarpMasqueService.GetEndpoint(account) : account.EndpointHost;
+        return Utils.IsIpv4(host) ? [$"{host}/32"] : [];
     }
 
     // Without its own IPv6 the host can send IPv6 only through WARP

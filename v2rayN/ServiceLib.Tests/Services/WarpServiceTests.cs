@@ -424,6 +424,127 @@ public class WarpServiceTests
         await warp.type.Should().BeEqualTo("wireguard");
         await warp.detour.IsNullOrEmpty().Should().BeTrue();
     }
+
+    private const string SampleUsqueConfig = """
+        {
+          "private_key": "secret",
+          "endpoint_v4": "162.159.198.1",
+          "endpoint_v6": "2606:4700:103::",
+          "endpoint_h2_v4": "162.159.198.2",
+          "endpoint_h2_v6": "",
+          "id": "device-123",
+          "ipv4": "172.16.0.2",
+          "ipv6": "2606:4700:110:8a36::1"
+        }
+        """;
+
+    private static WarpItem SampleMasqueAccount(EWarpMode mode, EWarpProtocol protocol = EWarpProtocol.Masque)
+    {
+        var (endpoint, endpointH2) = WarpMasqueService.ParseUsqueConfig(SampleUsqueConfig);
+        return new WarpItem
+        {
+            Mode = mode,
+            Protocol = protocol,
+            MasqueEndpoint = endpoint,
+            MasqueEndpointH2 = endpointH2,
+        };
+    }
+
+    [Test]
+    public async Task ParseUsqueConfig_ShouldReadEndpoints()
+    {
+        var (endpoint, endpointH2) = WarpMasqueService.ParseUsqueConfig(SampleUsqueConfig);
+        await endpoint.Should().BeEqualTo("162.159.198.1");
+        await endpointH2.Should().BeEqualTo("162.159.198.2");
+        await WarpMasqueService.ParseUsqueConfig("not json").Endpoint.Should().BeNull();
+    }
+
+    [Test]
+    public async Task Masque_HasAccount_ShouldFollowProtocol()
+    {
+        var masque = SampleMasqueAccount(EWarpMode.All);
+        await WarpService.HasAccount(masque).Should().BeTrue();
+        await WarpService.IsEnabled(masque).Should().BeTrue();
+        await WarpMasqueService.ShouldRun(masque).Should().BeTrue();
+        await WarpMasqueService.ShouldRun(SampleMasqueAccount(EWarpMode.Off)).Should().BeFalse();
+
+        // a WireGuard account alone is not enough for MASQUE, and the other way round
+        var wg = SampleAccount(EWarpMode.All);
+        wg.Protocol = EWarpProtocol.Masque;
+        await WarpService.HasAccount(wg).Should().BeFalse();
+        masque.Protocol = EWarpProtocol.WireGuard;
+        await WarpService.HasAccount(masque).Should().BeFalse();
+    }
+
+    [Test]
+    public async Task Masque_SocksArguments_ShouldPickTransport()
+    {
+        var quic = WarpMasqueService.BuildSocksArguments(SampleMasqueAccount(EWarpMode.All), "c.json", 10818);
+        await quic.Should().BeEqualTo("socks -c \"c.json\" -b 127.0.0.1 -p 10818");
+        var h2 = WarpMasqueService.BuildSocksArguments(SampleMasqueAccount(EWarpMode.All, EWarpProtocol.MasqueHttp2), "c.json", 10818);
+        await h2.Should().EndWith(" --http2");
+    }
+
+    [Test]
+    public async Task Masque_TunExclude_ShouldKeepUsqueEndpointOutOfTunnel()
+    {
+        await WarpService.GetTunExcludeAddresses(SampleMasqueAccount(EWarpMode.All)).Should().Contain("162.159.198.1/32");
+        await WarpService.GetTunExcludeAddresses(SampleMasqueAccount(EWarpMode.All, EWarpProtocol.MasqueHttp2)).Should().Contain("162.159.198.2/32");
+    }
+
+    [Test]
+    public async Task Masque_DownloadUrl_ShouldPointToPinnedRelease()
+    {
+        var url = WarpMasqueService.GetDownloadUrl();
+        await url.Should().NotBeNull();
+        await url!.Should().Contain($"/releases/download/v{WarpMasqueService.UsqueVersion}/usque_{WarpMasqueService.UsqueVersion}_");
+    }
+
+    [Test]
+    public async Task Xray_Masque_ShouldDialServerThroughUsque()
+    {
+        var config = CoreConfigTestFactory.CreateConfig(ECoreType.Xray);
+        config.WarpItem = SampleMasqueAccount(EWarpMode.All);
+        CoreConfigTestFactory.BindAppManagerConfig(config);
+        var server = CoreConfigTestFactory.CreateSocksNode(ECoreType.Xray, "srv", "server");
+        server.Address = "2001:db8::1";
+        var context = CoreConfigTestFactory.CreateContext(config, server, ECoreType.Xray);
+
+        var result = new CoreConfigV2rayService(context).GenerateClientConfigContent();
+        await result.Success.Should().BeTrue();
+        var cfg = JsonUtils.Deserialize<V2rayConfig>(result.Data!.ToString())!;
+
+        var proxy = cfg.outbounds.First(o => o.tag == Global.ProxyTag);
+        await (proxy.streamSettings?.sockopt?.dialerProxy).Should().BeEqualTo(WarpService.TransportTag);
+        var warp = cfg.outbounds.First(o => o.tag == WarpService.TransportTag);
+        await warp.protocol.Should().BeEqualTo("socks");
+        var json = JsonUtils.Serialize(warp);
+        await json.Should().Contain(Global.Loopback);
+        await json.Should().Contain(AppManager.Instance.WarpMasquePort.ToString());
+    }
+
+    [Test]
+    public async Task Singbox_Masque_ShouldDetourServerThroughUsque()
+    {
+        var config = CoreConfigTestFactory.CreateConfig(ECoreType.sing_box);
+        config.WarpItem = SampleMasqueAccount(EWarpMode.All);
+        CoreConfigTestFactory.BindAppManagerConfig(config);
+        var server = CoreConfigTestFactory.CreateSocksNode(ECoreType.sing_box, "srv", "server");
+        server.Address = "2001:db8::1";
+        var context = CoreConfigTestFactory.CreateContext(config, server, ECoreType.sing_box);
+
+        var result = new CoreConfigSingboxService(context).GenerateClientConfigContent();
+        await result.Success.Should().BeTrue();
+        var cfg = JsonUtils.Deserialize<SingboxConfig>(result.Data!.ToString())!;
+
+        var proxy = cfg.outbounds.First(o => o.tag == Global.ProxyTag);
+        await proxy.detour.Should().BeEqualTo(WarpService.TransportTag);
+        var warp = cfg.outbounds.First(o => o.tag == WarpService.TransportTag);
+        await warp.type.Should().BeEqualTo("socks");
+        await warp.server.Should().BeEqualTo(Global.Loopback);
+        await warp.server_port.Should().BeEqualTo(AppManager.Instance.WarpMasquePort);
+        await (cfg.endpoints?.Any(e => e.tag == WarpService.TransportTag) ?? false).Should().BeFalse();
+    }
 }
 
 public class WireGuardHandshakeTests

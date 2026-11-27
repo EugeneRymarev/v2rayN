@@ -291,4 +291,7 @@ public class WarpItem
     public string? EndpointHost { get; set; }
     public int EndpointPort { get; set; }
     public string? DeviceId { get; set; }
+    public EWarpProtocol Protocol { get; set; } = EWarpProtocol.WireGuard;
+    public string? MasqueEndpoint { get; set; }
+    public string? MasqueEndpointH2 { get; set; }
 }

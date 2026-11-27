@@ -9,6 +9,7 @@ public sealed class AppManager
     private int? _statePort;
     private int? _statePort2;
     private int? _warpIPv6Port;
+    private int? _warpMasquePort;
     public static AppManager Instance => _instance.Value;
     public IWindowDialog WindowDialog { get; set; } = null!;
 
@@ -36,6 +37,15 @@ public sealed class AppManager
         {
             _warpIPv6Port ??= Utils.GetFreePort(GetLocalPort(EInboundProtocol.socks) + 7);
             return _warpIPv6Port.Value;
+        }
+    }
+
+    public int WarpMasquePort
+    {
+        get
+        {
+            _warpMasquePort ??= Utils.GetFreePort(GetLocalPort(EInboundProtocol.socks) + 8);
+            return _warpMasquePort.Value;
         }
     }
 
