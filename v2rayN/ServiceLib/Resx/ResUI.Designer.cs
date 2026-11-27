@@ -2545,6 +2545,24 @@ namespace ServiceLib.Resx {
         }
 
         /// <summary>
+        ///   查找类似 Could not download usque. Put it here by hand: {0} 的本地化字符串。
+        /// </summary>
+        public static string MsgWarpMasqueDownloadFailed {
+            get {
+                return ResourceManager.GetString("MsgWarpMasqueDownloadFailed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 MASQUE does not need an address search 的本地化字符串。
+        /// </summary>
+        public static string MsgWarpMasqueNoScan {
+            get {
+                return ResourceManager.GetString("MsgWarpMasqueNoScan", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   查找类似 Create a WARP account first 的本地化字符串。
         /// </summary>
         public static string MsgWarpNoAccount {
@@ -5469,6 +5487,51 @@ namespace ServiceLib.Resx {
         public static string TbWarpNoAccount {
             get {
                 return ResourceManager.GetString("TbWarpNoAccount", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Connection method 的本地化字符串。
+        /// </summary>
+        public static string TbWarpProtocol {
+            get {
+                return ResourceManager.GetString("TbWarpProtocol", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 MASQUE over UDP, like the official client 的本地化字符串。
+        /// </summary>
+        public static string TbWarpProtocolMasque {
+            get {
+                return ResourceManager.GetString("TbWarpProtocolMasque", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 MASQUE over TCP, if UDP is blocked 的本地化字符串。
+        /// </summary>
+        public static string TbWarpProtocolMasqueHttp2 {
+            get {
+                return ResourceManager.GetString("TbWarpProtocolMasqueHttp2", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 If WARP does not connect, try MASQUE: it looks like ordinary HTTPS. Create the account again after changing the method. MASQUE uses usque, which is downloaded on first use. 的本地化字符串。
+        /// </summary>
+        public static string TbWarpProtocolTips {
+            get {
+                return ResourceManager.GetString("TbWarpProtocolTips", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 WireGuard (standard) 的本地化字符串。
+        /// </summary>
+        public static string TbWarpProtocolWireGuard {
+            get {
+                return ResourceManager.GetString("TbWarpProtocolWireGuard", resourceCulture);
             }
         }
 

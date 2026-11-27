@@ -2025,6 +2025,27 @@
   <data name="MsgWarpNoAccount" xml:space="preserve">
     <value>Сначала создайте аккаунт WARP</value>
   </data>
+  <data name="TbWarpProtocol" xml:space="preserve">
+    <value>Способ подключения</value>
+  </data>
+  <data name="TbWarpProtocolWireGuard" xml:space="preserve">
+    <value>WireGuard (обычный)</value>
+  </data>
+  <data name="TbWarpProtocolMasque" xml:space="preserve">
+    <value>MASQUE через UDP, как официальный клиент</value>
+  </data>
+  <data name="TbWarpProtocolMasqueHttp2" xml:space="preserve">
+    <value>MASQUE через TCP, если UDP заблокирован</value>
+  </data>
+  <data name="TbWarpProtocolTips" xml:space="preserve">
+    <value>Если WARP не подключается, попробуйте MASQUE: он выглядит как обычный HTTPS. После смены способа создайте аккаунт заново. Для MASQUE нужна программа usque, она скачается сама при первом запуске.</value>
+  </data>
+  <data name="MsgWarpMasqueDownloadFailed" xml:space="preserve">
+    <value>Не удалось скачать usque. Положите её сюда вручную: {0}</value>
+  </data>
+  <data name="MsgWarpMasqueNoScan" xml:space="preserve">
+    <value>Для MASQUE поиск адреса не нужен</value>
+  </data>
   <data name="menuRoutingImportFromClipboard" xml:space="preserve">
     <value>Импорт наборов правил из буфера обмена</value>
   </data>

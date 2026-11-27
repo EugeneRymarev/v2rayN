@@ -1236,6 +1236,22 @@
                                 Width="300"
                                 Margin="{StaticResource Margin4}" />
                         </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock
+                                Margin="{StaticResource Margin4}"
+                                VerticalAlignment="Center"
+                                Text="{x:Static resx:ResUI.TbWarpProtocol}" />
+                            <ComboBox
+                                x:Name="cmbWarpProtocol"
+                                Width="300"
+                                Margin="{StaticResource Margin4}" />
+                        </StackPanel>
+                        <TextBlock
+                            MaxWidth="700"
+                            Margin="{StaticResource Margin4}"
+                            HorizontalAlignment="Left"
+                            Text="{x:Static resx:ResUI.TbWarpProtocolTips}"
+                            TextWrapping="Wrap" />
                         <TextBlock
                             x:Name="txtWarpStatus"
                             Margin="{StaticResource Margin4}"
