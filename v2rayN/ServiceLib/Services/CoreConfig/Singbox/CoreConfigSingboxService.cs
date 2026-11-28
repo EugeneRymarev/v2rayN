@@ -49,6 +49,8 @@ public partial class CoreConfigSingboxService(CoreConfigContext context)
 
             GenOutbounds();
 
+            ApplyWarpTransport();
+
             GenRouting();
 
             GenDns();
@@ -168,6 +170,7 @@ public partial class CoreConfigSingboxService(CoreConfigContext context)
                 _coreConfig.route.rules.Add(rule);
             }
 
+            ApplyWarpTransport();
             ApplyOutboundBindInterface();
             ApplyOutboundSendThrough();
             ret.Success = true;
@@ -217,6 +220,7 @@ public partial class CoreConfigSingboxService(CoreConfigContext context)
 
             GenLog();
             GenOutbounds();
+            ApplyWarpTransport();
             GenMinimizedDns();
 
             _coreConfig.route.rules.Clear();

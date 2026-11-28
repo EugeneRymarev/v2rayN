@@ -279,3 +279,19 @@ public class HappyEyeballs4RayItem
     public int? Interleave { get; set; }
     public int? MaxConcurrentTry { get; set; }
 }
+
+public class WarpItem
+{
+    public EWarpMode Mode { get; set; } = EWarpMode.Off;
+    public string? PrivateKey { get; set; }
+    public string? PeerPublicKey { get; set; }
+    public string? AddressV4 { get; set; }
+    public string? AddressV6 { get; set; }
+    public string? Reserved { get; set; }
+    public string? EndpointHost { get; set; }
+    public int EndpointPort { get; set; }
+    public string? DeviceId { get; set; }
+    public EWarpProtocol Protocol { get; set; } = EWarpProtocol.WireGuard;
+    public string? MasqueEndpoint { get; set; }
+    public string? MasqueEndpointH2 { get; set; }
+}

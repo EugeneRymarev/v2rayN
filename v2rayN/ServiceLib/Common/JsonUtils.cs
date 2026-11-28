@@ -161,6 +161,7 @@ public class JsonUtils
                 WriteIndented = true,
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
                 TypeInfoResolver = AppJsonContext.Default,
             };
             result = JsonSerializer.Serialize(obj, (JsonTypeInfo<T>)options.GetTypeInfo(typeof(T)));
@@ -208,6 +209,8 @@ public class JsonUtils
 [JsonSerializable(typeof(ProfileItemModel))]
 [JsonSerializable(typeof(List<ProfileItemModel>))]
 [JsonSerializable(typeof(RoutingTemplate))]
+[JsonSerializable(typeof(RoutingExchangeItem))]
+[JsonSerializable(typeof(List<RoutingExchangeItem>))]
 [JsonSerializable(typeof(DNSItem))]
 [JsonSerializable(typeof(SimpleDNSItem))]
 [JsonSerializable(typeof(IPAPIInfo))]

@@ -74,12 +74,19 @@ public partial class CoreConfigSingboxService
 
                 var address = _config.TunModeItem.IPv4Address.NullIfEmpty() ?? Global.TunIPv4Address.First();
                 tunInbound.address = [address];
-                if (_config.TunModeItem.EnableIPv6Address == true)
+                // IPv6 may come from WARP
+                if (_config.TunModeItem.EnableIPv6Address
+                    || WarpService.IsWarpOnly(_config.WarpItem)
+                    || WarpService.ShouldRouteIPv6(_config.WarpItem, context.HasGlobalIPv6Address))
                 {
                     var address6 = _config.TunModeItem.IPv6Address.NullIfEmpty() ?? Global.TunIPv6Address.First();
                     tunInbound.address.Add(address6);
                 }
-                tunInbound.route_exclude_address = _config.TunModeItem.RouteExcludeAddress;
+                var excludeAddress = (_config.TunModeItem.RouteExcludeAddress ?? [])
+                    .Concat(WarpService.GetTunExcludeAddresses(_config.WarpItem))
+                    .Distinct()
+                    .ToList();
+                tunInbound.route_exclude_address = excludeAddress.Count > 0 ? excludeAddress : null;
 
                 _coreConfig.inbounds.Add(tunInbound);
             }

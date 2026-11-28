@@ -244,7 +244,7 @@ public partial class StatusBarViewModel : MyReactiveObject
     public async Task RefreshServersBiz()
     {
         //display running server
-        var running = await ConfigTextHandler.GetDefaultServer();
+        var running = await WarpService.GetNodeToRunAsync(_config);
         if (running != null)
         {
             RunningServerDisplay = running.GetSummary();
@@ -264,7 +264,7 @@ public partial class StatusBarViewModel : MyReactiveObject
 
     public async Task<AvailabilityCheckResult?> TestServerAvailability()
     {
-        var item = await ConfigTextHandler.GetDefaultServer();
+        var item = await WarpService.GetNodeToRunAsync(_config);
         if (item == null)
         {
             return null;

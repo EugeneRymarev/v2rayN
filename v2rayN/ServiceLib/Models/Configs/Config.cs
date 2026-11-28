@@ -32,6 +32,7 @@ public class Config
     public TunModeItem TunModeItem { get; set; }
     public UIItem UiItem { get; set; }
     public WebDavItem WebDavItem { get; set; }
+    public WarpItem? WarpItem { get; set; }
     public List<CoreTypeItem> CoreTypeItem { get; set; }
     public List<KeyEventItem> GlobalHotkeys { get; set; }
     public List<InItem> Inbound { get; set; }

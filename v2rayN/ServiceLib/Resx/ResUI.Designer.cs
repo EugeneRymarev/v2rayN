@@ -86,6 +86,24 @@ namespace ServiceLib.Resx {
                 return ResourceManager.GetString("BatchExportURLSuccessfully", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   查找类似 Create WARP account 的本地化字符串。
+        /// </summary>
+        public static string BtnWarpRegister {
+            get {
+                return ResourceManager.GetString("BtnWarpRegister", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Find the best WARP address 的本地化字符串。
+        /// </summary>
+        public static string BtnWarpSelectEndpoint {
+            get {
+                return ResourceManager.GetString("BtnWarpSelectEndpoint", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   查找类似 Certificate not set 的本地化字符串。
@@ -1679,6 +1697,24 @@ namespace ServiceLib.Resx {
                 return ResourceManager.GetString("menuRoutingAdvancedSetDefault", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   查找类似 Export Selected Rule Sets to Clipboard 的本地化字符串。
+        /// </summary>
+        public static string menuRoutingExportSelected {
+            get {
+                return ResourceManager.GetString("menuRoutingExportSelected", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Import Rule Sets from Clipboard 的本地化字符串。
+        /// </summary>
+        public static string menuRoutingImportFromClipboard {
+            get {
+                return ResourceManager.GetString("menuRoutingImportFromClipboard", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   查找类似 Routing Rule Details Setting 的本地化字符串。
@@ -2480,6 +2516,87 @@ namespace ServiceLib.Resx {
                 return ResourceManager.GetString("MsgUpdateV2rayCoreSuccessfullyMore", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   查找类似 WARP account created 的本地化字符串。
+        /// </summary>
+        public static string MsgWarpAccountCreated {
+            get {
+                return ResourceManager.GetString("MsgWarpAccountCreated", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 No WARP address answered, WireGuard may be blocked. 的本地化字符串。
+        /// </summary>
+        public static string MsgWarpEndpointNotFound {
+            get {
+                return ResourceManager.GetString("MsgWarpEndpointNotFound", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 WARP address chosen: {0}:{1} ({2} ms) 的本地化字符串。
+        /// </summary>
+        public static string MsgWarpEndpointSelected {
+            get {
+                return ResourceManager.GetString("MsgWarpEndpointSelected", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Could not download usque. Put it here by hand: {0} 的本地化字符串。
+        /// </summary>
+        public static string MsgWarpMasqueDownloadFailed {
+            get {
+                return ResourceManager.GetString("MsgWarpMasqueDownloadFailed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 The HTTP/2 address of WARP is blocked by your provider. Choose MASQUE over UDP 的本地化字符串。
+        /// </summary>
+        public static string MsgWarpMasqueHttp2Blocked {
+            get {
+                return ResourceManager.GetString("MsgWarpMasqueHttp2Blocked", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Create a WARP account first 的本地化字符串。
+        /// </summary>
+        public static string MsgWarpNoAccount {
+            get {
+                return ResourceManager.GetString("MsgWarpNoAccount", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Could not register Cloudflare WARP. Start any working server and try again. 的本地化字符串。
+        /// </summary>
+        public static string MsgWarpRegisterFailed {
+            get {
+                return ResourceManager.GetString("MsgWarpRegisterFailed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Registering a Cloudflare WARP account... 的本地化字符串。
+        /// </summary>
+        public static string MsgWarpRegistering {
+            get {
+                return ResourceManager.GetString("MsgWarpRegistering", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Checking WARP addresses... 的本地化字符串。
+        /// </summary>
+        public static string MsgWarpScanning {
+            get {
+                return ResourceManager.GetString("MsgWarpScanning", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   查找类似 Successful operation. Click the settings menu to reboot the app. 的本地化字符串。
@@ -2649,6 +2766,15 @@ namespace ServiceLib.Resx {
         public static string RemoveServer {
             get {
                 return ResourceManager.GetString("RemoveServer", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Imported 的本地化字符串。
+        /// </summary>
+        public static string RoutingImportedRemarks {
+            get {
+                return ResourceManager.GetString("RoutingImportedRemarks", resourceCulture);
             }
         }
         
@@ -5298,6 +5424,132 @@ namespace ServiceLib.Resx {
         public static string TbWarp {
             get {
                 return ResourceManager.GetString("TbWarp", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 WARP account 的本地化字符串。
+        /// </summary>
+        public static string TbWarpAccount {
+            get {
+                return ResourceManager.GetString("TbWarpAccount", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Connect to servers through Cloudflare WARP 的本地化字符串。
+        /// </summary>
+        public static string TbWarpMode {
+            get {
+                return ResourceManager.GetString("TbWarpMode", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 All servers 的本地化字符串。
+        /// </summary>
+        public static string TbWarpModeAll {
+            get {
+                return ResourceManager.GetString("TbWarpModeAll", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Only servers with an IPv6 address 的本地化字符串。
+        /// </summary>
+        public static string TbWarpModeIpv6 {
+            get {
+                return ResourceManager.GetString("TbWarpModeIpv6", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Off 的本地化字符串。
+        /// </summary>
+        public static string TbWarpModeOff {
+            get {
+                return ResourceManager.GetString("TbWarpModeOff", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Everything through WARP, without a server 的本地化字符串。
+        /// </summary>
+        public static string TbWarpModeWarpOnly {
+            get {
+                return ResourceManager.GetString("TbWarpModeWarpOnly", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 not created yet 的本地化字符串。
+        /// </summary>
+        public static string TbWarpNoAccount {
+            get {
+                return ResourceManager.GetString("TbWarpNoAccount", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Connection method 的本地化字符串。
+        /// </summary>
+        public static string TbWarpProtocol {
+            get {
+                return ResourceManager.GetString("TbWarpProtocol", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 MASQUE over UDP, like the official client 的本地化字符串。
+        /// </summary>
+        public static string TbWarpProtocolMasque {
+            get {
+                return ResourceManager.GetString("TbWarpProtocolMasque", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 MASQUE over TCP, if UDP is blocked 的本地化字符串。
+        /// </summary>
+        public static string TbWarpProtocolMasqueHttp2 {
+            get {
+                return ResourceManager.GetString("TbWarpProtocolMasqueHttp2", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 If WARP does not connect, try MASQUE: it looks like ordinary HTTPS. When switching between WireGuard and MASQUE, create the account again. MASQUE uses usque, which is downloaded on first use. 的本地化字符串。
+        /// </summary>
+        public static string TbWarpProtocolTips {
+            get {
+                return ResourceManager.GetString("TbWarpProtocolTips", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 WireGuard (standard) 的本地化字符串。
+        /// </summary>
+        public static string TbWarpProtocolWireGuard {
+            get {
+                return ResourceManager.GetString("TbWarpProtocolWireGuard", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 WARP (IPv6) 的本地化字符串。
+        /// </summary>
+        public static string TbWarpSettings {
+            get {
+                return ResourceManager.GetString("TbWarpSettings", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   查找类似 Cloudflare WARP gives IPv6 over an IPv4-only connection: v2rayN connects to WARP, then to your server through it. &apos;Everything through WARP&apos; needs no server. Turn on TUN to use it for all programs. 的本地化字符串。
+        /// </summary>
+        public static string TbWarpTips {
+            get {
+                return ResourceManager.GetString("TbWarpTips", resourceCulture);
             }
         }
         

@@ -49,6 +49,26 @@
                         <TextBlock Style="{StaticResource ToolbarTextBlock}" Text="{x:Static resx:ResUI.menuRoutingAdvancedImportRules}" />
                     </StackPanel>
                 </Button>
+                <Separator />
+                <Button x:Name="menuRoutingImportFromClipboard2">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon
+                            Margin="{StaticResource MarginRight8}"
+                            VerticalAlignment="Center"
+                            Kind="ContentPaste" />
+                        <TextBlock Style="{StaticResource ToolbarTextBlock}" Text="{x:Static resx:ResUI.menuRoutingImportFromClipboard}" />
+                    </StackPanel>
+                </Button>
+                <Separator />
+                <Button x:Name="menuRoutingExportSelected2">
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon
+                            Margin="{StaticResource MarginRight8}"
+                            VerticalAlignment="Center"
+                            Kind="ContentCopy" />
+                        <TextBlock Style="{StaticResource ToolbarTextBlock}" Text="{x:Static resx:ResUI.menuRoutingExportSelected}" />
+                    </StackPanel>
+                </Button>
             </ToolBar>
         </ToolBarTray>
 
@@ -141,6 +161,17 @@
                                 x:Name="menuRoutingAdvancedImportRules"
                                 Height="{StaticResource MenuItemHeight}"
                                 Header="{x:Static resx:ResUI.menuRoutingAdvancedImportRules}" />
+                            <Separator />
+                            <MenuItem
+                                x:Name="menuRoutingImportFromClipboard"
+                                Height="{StaticResource MenuItemHeight}"
+                                Header="{x:Static resx:ResUI.menuRoutingImportFromClipboard}"
+                                InputGestureText="Ctrl+V" />
+                            <MenuItem
+                                x:Name="menuRoutingExportSelected"
+                                Height="{StaticResource MenuItemHeight}"
+                                Header="{x:Static resx:ResUI.menuRoutingExportSelected}"
+                                InputGestureText="Ctrl+C" />
                         </ContextMenu>
                     </DataGrid.ContextMenu>
                     <DataGrid.Resources>

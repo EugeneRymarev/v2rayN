@@ -241,6 +241,8 @@ public partial class CoreConfigSingboxService
                 clash_mode = nameof(ERuleMode.Global)
             });
 
+            GenWarpIPv6Rule();
+
             var domainStrategy = _config.RoutingBasicItem.DomainStrategy4Singbox.NullIfEmpty();
             var routing = context.RoutingItem;
             if (routing.DomainStrategy4Singbox.IsNotEmpty())

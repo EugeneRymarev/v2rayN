@@ -223,6 +223,29 @@ function Build-MsiFileGraph([string]$SourceRoot) {
     return @{ Directories = ($dirRefs -join "`n"); Components = ($components -join "`n"); Count = $components.Count }
 }
 
+function New-PortableZip([string]$SourceRoot, [string]$Destination, [string]$TopFolder) {
+    # User data folders must never end up in the archive: the publish folder may be used as a live portable install.
+    $excluded = @('guiConfigs', 'binConfigs', 'guiLogs', 'guiTemps')
+    Add-Type -AssemblyName System.IO.Compression
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    if (Test-Path -LiteralPath $Destination) { Remove-Item -LiteralPath $Destination -Force }
+    $sourcePrefix = $SourceRoot.TrimEnd([char]'\', [char]'/') + [System.IO.Path]::DirectorySeparatorChar
+    $count = 0
+    $archive = [System.IO.Compression.ZipFile]::Open($Destination, [System.IO.Compression.ZipArchiveMode]::Create)
+    try {
+        foreach ($file in Get-ChildItem -LiteralPath $SourceRoot -File -Recurse | Sort-Object FullName) {
+            $rel = $file.FullName.Substring($sourcePrefix.Length).Replace('\', '/')
+            $first = $rel.Split('/')[0]
+            if ($excluded -contains $first) { continue }
+            $entryName = if ($TopFolder) { "$TopFolder/$rel" } else { $rel }
+            [void][System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, $file.FullName, $entryName, [System.IO.Compression.CompressionLevel]::Optimal)
+            $count++
+        }
+    } finally { $archive.Dispose() }
+    if ($count -eq 0) { throw "Nothing to archive in $SourceRoot" }
+    Write-Host "ZIP files: $count"
+}
+
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 $projectRoot = Join-Path $root 'v2rayN'
 $propsFile = Join-Path $projectRoot 'Directory.Build.props'
@@ -728,6 +751,10 @@ try {
             Run $wix @('build',$bundleSource,'-arch',$map.Wix,'-ext','WixToolset.Util.wixext','-ext','WixToolset.BootstrapperApplications.wixext','-o',$setup)
             Assert-Machine $setup $map.Machine
             Write-Host "Created: $setup"
+            $zip = Join-Path $dist "v2rayN-windows-$archSuffix$desktopSuffix.zip"
+            $script:Stage = "Building $flavor $arch portable ZIP"
+            New-PortableZip $out $zip "v2rayN-windows-$archSuffix"
+            Write-Host "Created: $zip"
         }
     }
 } finally { Set-Location $originalLocation }

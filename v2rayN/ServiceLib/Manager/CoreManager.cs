@@ -14,6 +14,7 @@ public class CoreManager
 
     private ProcessService? _processService;
     private ProcessService? _processPreService;
+    private ProcessService? _processWarpService;
     private bool _linuxSudo = false;
     private Func<bool, string, Task>? _updateFunc;
     private const string _tag = "CoreHandler";
@@ -91,6 +92,8 @@ public class CoreManager
             await WindowsUtils.RemoveTunDevice();
         }
 
+        await WarpMasqueStart();
+
         if (!await CoreStart(mainContext))
         {
             return;
@@ -128,6 +131,7 @@ public class CoreManager
         await UpdateFunc(false, string.Format(ResUI.StartService, DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss")));
         await UpdateFunc(false, configPath);
 
+        await WarpMasqueStart();
         var coreInfo = CoreInfoManager.Instance.GetCoreInfo(coreType);
         return await RunProcess(coreInfo, fileName, true, false);
     }
@@ -149,6 +153,7 @@ public class CoreManager
             return null;
         }
 
+        await WarpMasqueStart();
         var coreType = context.RunCoreType;
         var coreInfo = CoreInfoManager.Instance.GetCoreInfo(coreType);
         return await RunProcess(coreInfo, fileName, true, false);
@@ -176,6 +181,13 @@ public class CoreManager
                 await _processPreService.StopAsync();
                 _processPreService.Dispose();
                 _processPreService = null;
+            }
+
+            if (_processWarpService != null)
+            {
+                await _processWarpService.StopAsync();
+                _processWarpService.Dispose();
+                _processWarpService = null;
             }
         }
         catch (Exception ex)
@@ -237,6 +249,50 @@ public class CoreManager
         return true;
     }
 
+    // usque must be up before the core dials WARP through it
+    private async Task WarpMasqueStart()
+    {
+        var account = _config.WarpItem;
+        if (!WarpMasqueService.ShouldRun(account) || _processWarpService is { HasExited: false })
+        {
+            return;
+        }
+        try
+        {
+            var exe = await WarpMasqueService.EnsureUsqueAsync();
+            if (exe.IsNullOrEmpty())
+            {
+                await UpdateFunc(true, string.Format(ResUI.MsgWarpMasqueDownloadFailed, WarpMasqueService.ExePath));
+                return;
+            }
+            if (!File.Exists(WarpMasqueService.ConfigPath))
+            {
+                await UpdateFunc(true, ResUI.MsgWarpNoAccount);
+                return;
+            }
+
+            var port = AppManager.Instance.WarpMasquePort;
+            var proc = new ProcessService(
+                fileName: exe!,
+                arguments: WarpMasqueService.BuildSocksArguments(account!, WarpMasqueService.ConfigPath, port),
+                workingDirectory: Utils.GetConfigPath(),
+                displayLog: true,
+                redirectInput: false,
+                environmentVars: null,
+                updateFunc: _updateFunc
+            );
+            await proc.StartAsync();
+            AddProcessJob(proc.Handle);
+            _processWarpService = proc;
+            await WaitForSocksPort(port);
+        }
+        catch (Exception ex)
+        {
+            Logging.SaveLog(_tag, ex);
+            await UpdateFunc(true, ex.Message);
+        }
+    }
+
     private async Task UpdateFunc(bool notify, string msg)
     {
         await _updateFunc?.Invoke(notify, msg);
@@ -253,10 +309,14 @@ public class CoreManager
             return;
         }
 
+        await WaitForSocksPort(preContext.Node.Port);
+    }
+
+    private static async Task WaitForSocksPort(int port)
+    {
         using var rootCts = new CancellationTokenSource(Global.LocalFetch);
         var rootToken = rootCts.Token;
 
-        var port = preContext.Node.Port;
         // SOCKS5 client greeting: VER=5, NMETHODS=1, METHOD=0x00 (no auth)
         ReadOnlyMemory<byte> greeting = new byte[] { 0x05, 0x01, 0x00 };
         var buf = new byte[2];
