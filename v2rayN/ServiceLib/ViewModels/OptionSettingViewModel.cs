@@ -122,6 +122,18 @@ public partial class OptionSettingViewModel : MyReactiveObject, ICloseable
 
     #endregion CoreType
 
+    #region WARP
+
+    [Reactive] public partial int WarpModeIndex { get; set; }
+    [Reactive] public partial int WarpProtocolIndex { get; set; }
+    [Reactive] public partial string WarpStatus { get; set; }
+    [Reactive] public partial bool WarpBusy { get; set; }
+
+    public ReactiveCommand<RxVoid, RxVoid> WarpRegisterCmd { get; }
+    public ReactiveCommand<RxVoid, RxVoid> WarpSelectEndpointCmd { get; }
+
+    #endregion WARP
+
     public ReactiveCommand<RxVoid, RxVoid> SaveCmd { get; }
 
     public OptionSettingViewModel()
@@ -137,11 +149,33 @@ public partial class OptionSettingViewModel : MyReactiveObject, ICloseable
             await SaveSettingAsync();
         });
 
+        var canWarp = this.WhenAnyValue(x => x.WarpBusy, busy => !busy);
+        WarpRegisterCmd = ReactiveCommand.CreateFromTask(async () =>
+        {
+            ApplyWarpProtocol();
+            await WarpActionAsync(ResUI.MsgWarpRegistering, () => WarpService.RegisterToConfigAsync(_config));
+        }, canWarp);
+        WarpSelectEndpointCmd = ReactiveCommand.CreateFromTask(async () =>
+        {
+            ApplyWarpProtocol();
+            await WarpActionAsync(ResUI.MsgWarpScanning, () => WarpService.SelectBestEndpointAsync(_config));
+        }, canWarp);
+
         _ = Init();
     }
 
     private async Task Init()
     {
+        #region WARP
+
+        _config.WarpItem ??= new();
+        WarpModeIndex = (int)_config.WarpItem.Mode;
+        WarpProtocolIndex = (int)_config.WarpItem.Protocol;
+        UpdateWarpStatus();
+        this.WhenAnyValue(x => x.WarpProtocolIndex).Subscribe(_ => UpdateWarpStatus());
+
+        #endregion WARP
+
         #region Core
 
         var inbound = _config.Inbound.First();
@@ -411,6 +445,11 @@ public partial class OptionSettingViewModel : MyReactiveObject, ICloseable
         _config.TunModeItem.IPv4Address = TunIPv4Address;
         _config.TunModeItem.IPv6Address = TunIPv6Address;
 
+        //warp
+        _config.WarpItem ??= new();
+        _config.WarpItem.Mode = Enum.IsDefined(typeof(EWarpMode), WarpModeIndex) ? (EWarpMode)WarpModeIndex : EWarpMode.Off;
+        ApplyWarpProtocol();
+
         //coreType
         await SaveCoreType();
 
@@ -425,6 +464,46 @@ public partial class OptionSettingViewModel : MyReactiveObject, ICloseable
         else
         {
             NoticeManager.Instance.Enqueue(ResUI.OperationFailed);
+        }
+    }
+
+    private EWarpProtocol SelectedWarpProtocol =>
+        Enum.IsDefined(typeof(EWarpProtocol), WarpProtocolIndex) ? (EWarpProtocol)WarpProtocolIndex : EWarpProtocol.WireGuard;
+
+    private void ApplyWarpProtocol()
+    {
+        _config.WarpItem ??= new();
+        _config.WarpItem.Protocol = SelectedWarpProtocol;
+    }
+
+    private void UpdateWarpStatus()
+    {
+        var item = _config.WarpItem;
+        if (SelectedWarpProtocol == EWarpProtocol.WireGuard)
+        {
+            WarpStatus = WarpService.HasWireGuardAccount(item)
+                ? $"{ResUI.TbWarpAccount}: {item!.EndpointHost}:{item.EndpointPort}, IPv6 {item.AddressV6}"
+                : $"{ResUI.TbWarpAccount}: {ResUI.TbWarpNoAccount}";
+            return;
+        }
+        WarpStatus = WarpMasqueService.HasAccount(item)
+            ? $"{ResUI.TbWarpAccount}: MASQUE"
+            : $"{ResUI.TbWarpAccount}: {ResUI.TbWarpNoAccount}";
+    }
+
+    private async Task WarpActionAsync(string startMessage, Func<Task<RetResult>> action)
+    {
+        WarpBusy = true;
+        WarpStatus = startMessage;
+        try
+        {
+            var ret = await action();
+            NoticeManager.Instance.SendMessageAndEnqueue(ret.Msg ?? (ret.Success ? ResUI.OperationSuccess : ResUI.OperationFailed));
+        }
+        finally
+        {
+            UpdateWarpStatus();
+            WarpBusy = false;
         }
     }
 

@@ -50,6 +50,8 @@ public partial class CoreConfigV2rayService(CoreConfigContext context)
 
             GenOutbounds();
 
+            ApplyWarpTransport();
+
             GenRouting();
 
             GenDns();
@@ -202,6 +204,8 @@ public partial class CoreConfigV2rayService(CoreConfigContext context)
                 _coreConfig.routing.rules.Add(rule);
             }
 
+            ApplyWarpTransport();
+
             if (_config.CoreBasicItem.EnableFragment)
             {
                 ApplyOutboundFragment();
@@ -277,6 +281,8 @@ public partial class CoreConfigV2rayService(CoreConfigContext context)
             });
 
             _coreConfig.routing.rules.Add(BuildFinalRule());
+
+            ApplyWarpTransport();
 
             if (_config.CoreBasicItem.EnableFragment)
             {

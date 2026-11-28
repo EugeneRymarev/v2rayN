@@ -100,6 +100,7 @@ public sealed class CoreInfoManager
         var urlXray = GetCoreUrl(ECoreType.Xray);
         var urlMihomo = GetCoreUrl(ECoreType.mihomo);
         var urlSingbox = GetCoreUrl(ECoreType.sing_box);
+        var urlUsque = GetCoreUrl(ECoreType.usque);
 
         _coreInfo =
         [
@@ -292,6 +293,21 @@ public sealed class CoreInfoManager
                     {
                         { "MIERU_CONFIG_JSON_FILE", "{0}" },
                     },
+                },
+
+                new CoreInfo
+                {
+                    CoreType = ECoreType.usque,
+                    CoreExes = ["usque"],
+                    Url = urlUsque,
+                    DownloadUrlWin64 = urlUsque + "/download/{0}/usque_{1}_windows_amd64.zip",
+                    DownloadUrlWinArm64 = urlUsque + "/download/{0}/usque_{1}_windows_arm64.zip",
+                    DownloadUrlLinux64 = urlUsque + "/download/{0}/usque_{1}_linux_amd64.zip",
+                    DownloadUrlLinuxArm64 = urlUsque + "/download/{0}/usque_{1}_linux_arm64.zip",
+                    DownloadUrlOSX64 = urlUsque + "/download/{0}/usque_{1}_darwin_amd64.zip",
+                    DownloadUrlOSXArm64 = urlUsque + "/download/{0}/usque_{1}_darwin_arm64.zip",
+                    Match = "usque",
+                    VersionArg = "version",
                 },
         ];
     }

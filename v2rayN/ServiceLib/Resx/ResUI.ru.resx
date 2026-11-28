@@ -1971,4 +1971,88 @@
   <data name="TransportPathTip6" xml:space="preserve">
     <value>Удаленная папка XDRIVE</value>
   </data>
+  <data name="MsgWarpRegistering" xml:space="preserve">
+    <value>Создание аккаунта Cloudflare WARP...</value>
+  </data>
+  <data name="MsgWarpRegisterFailed" xml:space="preserve">
+    <value>Не удалось создать аккаунт Cloudflare WARP. Включите любой рабочий сервер и попробуйте ещё раз.</value>
+  </data>
+  <data name="MsgWarpScanning" xml:space="preserve">
+    <value>Проверка адресов WARP...</value>
+  </data>
+  <data name="MsgWarpEndpointSelected" xml:space="preserve">
+    <value>Выбран адрес WARP: {0}:{1} ({2} мс)</value>
+  </data>
+  <data name="MsgWarpEndpointNotFound" xml:space="preserve">
+    <value>Ни один адрес WARP не ответил, возможно, WireGuard заблокирован.</value>
+  </data>
+  <data name="TbWarpSettings" xml:space="preserve">
+    <value>WARP (IPv6)</value>
+  </data>
+  <data name="TbWarpMode" xml:space="preserve">
+    <value>Подключаться к серверам через Cloudflare WARP</value>
+  </data>
+  <data name="TbWarpModeOff" xml:space="preserve">
+    <value>Выключено</value>
+  </data>
+  <data name="TbWarpModeIpv6" xml:space="preserve">
+    <value>Только к серверам с IPv6-адресом</value>
+  </data>
+  <data name="TbWarpModeAll" xml:space="preserve">
+    <value>Ко всем серверам</value>
+  </data>
+  <data name="TbWarpModeWarpOnly" xml:space="preserve">
+    <value>Всё через WARP, без сервера</value>
+  </data>
+  <data name="TbWarpTips" xml:space="preserve">
+    <value>Cloudflare WARP даёт IPv6 без IPv6 у провайдера: v2rayN подключается к WARP, а через него к вашему серверу. В режиме «Всё через WARP» сервер не нужен. Включите TUN, чтобы так работали все программы.</value>
+  </data>
+  <data name="TbWarpAccount" xml:space="preserve">
+    <value>Аккаунт WARP</value>
+  </data>
+  <data name="TbWarpNoAccount" xml:space="preserve">
+    <value>ещё не создан</value>
+  </data>
+  <data name="BtnWarpRegister" xml:space="preserve">
+    <value>Создать аккаунт WARP</value>
+  </data>
+  <data name="BtnWarpSelectEndpoint" xml:space="preserve">
+    <value>Подобрать лучший адрес WARP</value>
+  </data>
+  <data name="MsgWarpAccountCreated" xml:space="preserve">
+    <value>Аккаунт WARP создан</value>
+  </data>
+  <data name="MsgWarpNoAccount" xml:space="preserve">
+    <value>Сначала создайте аккаунт WARP</value>
+  </data>
+  <data name="TbWarpProtocol" xml:space="preserve">
+    <value>Способ подключения</value>
+  </data>
+  <data name="TbWarpProtocolWireGuard" xml:space="preserve">
+    <value>WireGuard (обычный)</value>
+  </data>
+  <data name="TbWarpProtocolMasque" xml:space="preserve">
+    <value>MASQUE через UDP, как официальный клиент</value>
+  </data>
+  <data name="TbWarpProtocolMasqueHttp2" xml:space="preserve">
+    <value>MASQUE через TCP, если UDP заблокирован</value>
+  </data>
+  <data name="TbWarpProtocolTips" xml:space="preserve">
+    <value>Если WARP не подключается, попробуйте MASQUE: он выглядит как обычный HTTPS. При переходе между WireGuard и MASQUE создайте аккаунт заново. Для MASQUE нужна программа usque, она скачается сама при первом запуске.</value>
+  </data>
+  <data name="MsgWarpMasqueDownloadFailed" xml:space="preserve">
+    <value>Не удалось скачать usque. Положите её сюда вручную: {0}</value>
+  </data>
+  <data name="MsgWarpMasqueNoScan" xml:space="preserve">
+    <value>Для MASQUE поиск адреса не нужен</value>
+  </data>
+  <data name="menuRoutingImportFromClipboard" xml:space="preserve">
+    <value>Импорт наборов правил из буфера обмена</value>
+  </data>
+  <data name="menuRoutingExportSelected" xml:space="preserve">
+    <value>Экспорт выбранных наборов правил в буфер обмена</value>
+  </data>
+  <data name="RoutingImportedRemarks" xml:space="preserve">
+    <value>Импортированный</value>
+  </data>
 </root>

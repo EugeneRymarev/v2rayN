@@ -35,6 +35,7 @@ public partial class CoreConfigV2rayService
                     outboundTag = Global.DnsOutboundTag,
                 });
             }
+            GenWarpIPv6Rules();
             if (_coreConfig.routing?.rules != null)
             {
                 _coreConfig.routing.domainStrategy = _config.RoutingBasicItem.DomainStrategy;

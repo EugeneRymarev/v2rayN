@@ -1989,4 +1989,88 @@ The "Get Certificate" action may fail if a self-signed certificate is used or if
   <data name="MsgCheckUpdateViaGitRefsFailed" xml:space="preserve">
     <value>Git references for {0} are unavailable</value>
   </data>
+  <data name="MsgWarpRegistering" xml:space="preserve">
+    <value>Registering a Cloudflare WARP account...</value>
+  </data>
+  <data name="MsgWarpRegisterFailed" xml:space="preserve">
+    <value>Could not register Cloudflare WARP. Start any working server and try again.</value>
+  </data>
+  <data name="MsgWarpScanning" xml:space="preserve">
+    <value>Checking WARP addresses...</value>
+  </data>
+  <data name="MsgWarpEndpointSelected" xml:space="preserve">
+    <value>WARP address chosen: {0}:{1} ({2} ms)</value>
+  </data>
+  <data name="MsgWarpEndpointNotFound" xml:space="preserve">
+    <value>No WARP address answered, WireGuard may be blocked.</value>
+  </data>
+  <data name="TbWarpSettings" xml:space="preserve">
+    <value>WARP (IPv6)</value>
+  </data>
+  <data name="TbWarpMode" xml:space="preserve">
+    <value>Connect to servers through Cloudflare WARP</value>
+  </data>
+  <data name="TbWarpModeOff" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="TbWarpModeIpv6" xml:space="preserve">
+    <value>Only servers with an IPv6 address</value>
+  </data>
+  <data name="TbWarpModeAll" xml:space="preserve">
+    <value>All servers</value>
+  </data>
+  <data name="TbWarpModeWarpOnly" xml:space="preserve">
+    <value>Everything through WARP, without a server</value>
+  </data>
+  <data name="TbWarpTips" xml:space="preserve">
+    <value>Cloudflare WARP gives IPv6 over an IPv4-only connection: v2rayN connects to WARP, then to your server through it. 'Everything through WARP' needs no server. Turn on TUN to use it for all programs.</value>
+  </data>
+  <data name="TbWarpAccount" xml:space="preserve">
+    <value>WARP account</value>
+  </data>
+  <data name="TbWarpNoAccount" xml:space="preserve">
+    <value>not created yet</value>
+  </data>
+  <data name="BtnWarpRegister" xml:space="preserve">
+    <value>Create WARP account</value>
+  </data>
+  <data name="BtnWarpSelectEndpoint" xml:space="preserve">
+    <value>Find the best WARP address</value>
+  </data>
+  <data name="MsgWarpAccountCreated" xml:space="preserve">
+    <value>WARP account created</value>
+  </data>
+  <data name="MsgWarpNoAccount" xml:space="preserve">
+    <value>Create a WARP account first</value>
+  </data>
+  <data name="TbWarpProtocol" xml:space="preserve">
+    <value>Connection method</value>
+  </data>
+  <data name="TbWarpProtocolWireGuard" xml:space="preserve">
+    <value>WireGuard (standard)</value>
+  </data>
+  <data name="TbWarpProtocolMasque" xml:space="preserve">
+    <value>MASQUE over UDP, like the official client</value>
+  </data>
+  <data name="TbWarpProtocolMasqueHttp2" xml:space="preserve">
+    <value>MASQUE over TCP, if UDP is blocked</value>
+  </data>
+  <data name="TbWarpProtocolTips" xml:space="preserve">
+    <value>If WARP does not connect, try MASQUE: it looks like ordinary HTTPS. When switching between WireGuard and MASQUE, create the account again. MASQUE uses usque, which is downloaded on first use.</value>
+  </data>
+  <data name="MsgWarpMasqueDownloadFailed" xml:space="preserve">
+    <value>Could not download usque. Put it here by hand: {0}</value>
+  </data>
+  <data name="MsgWarpMasqueNoScan" xml:space="preserve">
+    <value>MASQUE does not need an address search</value>
+  </data>
+  <data name="menuRoutingImportFromClipboard" xml:space="preserve">
+    <value>Import Rule Sets from Clipboard</value>
+  </data>
+  <data name="menuRoutingExportSelected" xml:space="preserve">
+    <value>Export Selected Rule Sets to Clipboard</value>
+  </data>
+  <data name="RoutingImportedRemarks" xml:space="preserve">
+    <value>Imported</value>
+  </data>
 </root>
