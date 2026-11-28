@@ -2554,11 +2554,11 @@ namespace ServiceLib.Resx {
         }
 
         /// <summary>
-        ///   查找类似 MASQUE does not need an address search 的本地化字符串。
+        ///   查找类似 The HTTP/2 address of WARP is blocked by your provider. Choose MASQUE over UDP 的本地化字符串。
         /// </summary>
-        public static string MsgWarpMasqueNoScan {
+        public static string MsgWarpMasqueHttp2Blocked {
             get {
-                return ResourceManager.GetString("MsgWarpMasqueNoScan", resourceCulture);
+                return ResourceManager.GetString("MsgWarpMasqueHttp2Blocked", resourceCulture);
             }
         }
 
