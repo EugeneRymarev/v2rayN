@@ -5518,7 +5518,7 @@ namespace ServiceLib.Resx {
         }
 
         /// <summary>
-        ///   查找类似 If WARP does not connect, try MASQUE: it looks like ordinary HTTPS. Create the account again after changing the method. MASQUE uses usque, which is downloaded on first use. 的本地化字符串。
+        ///   查找类似 If WARP does not connect, try MASQUE: it looks like ordinary HTTPS. When switching between WireGuard and MASQUE, create the account again. MASQUE uses usque, which is downloaded on first use. 的本地化字符串。
         /// </summary>
         public static string TbWarpProtocolTips {
             get {

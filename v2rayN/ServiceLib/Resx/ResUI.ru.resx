@@ -2038,7 +2038,7 @@
     <value>MASQUE через TCP, если UDP заблокирован</value>
   </data>
   <data name="TbWarpProtocolTips" xml:space="preserve">
-    <value>Если WARP не подключается, попробуйте MASQUE: он выглядит как обычный HTTPS. После смены способа создайте аккаунт заново. Для MASQUE нужна программа usque, она скачается сама при первом запуске.</value>
+    <value>Если WARP не подключается, попробуйте MASQUE: он выглядит как обычный HTTPS. При переходе между WireGuard и MASQUE создайте аккаунт заново. Для MASQUE нужна программа usque, она скачается сама при первом запуске.</value>
   </data>
   <data name="MsgWarpMasqueDownloadFailed" xml:space="preserve">
     <value>Не удалось скачать usque. Положите её сюда вручную: {0}</value>

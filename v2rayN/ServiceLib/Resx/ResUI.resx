@@ -2056,7 +2056,7 @@ The "Get Certificate" action may fail if a self-signed certificate is used or if
     <value>MASQUE over TCP, if UDP is blocked</value>
   </data>
   <data name="TbWarpProtocolTips" xml:space="preserve">
-    <value>If WARP does not connect, try MASQUE: it looks like ordinary HTTPS. Create the account again after changing the method. MASQUE uses usque, which is downloaded on first use.</value>
+    <value>If WARP does not connect, try MASQUE: it looks like ordinary HTTPS. When switching between WireGuard and MASQUE, create the account again. MASQUE uses usque, which is downloaded on first use.</value>
   </data>
   <data name="MsgWarpMasqueDownloadFailed" xml:space="preserve">
     <value>Could not download usque. Put it here by hand: {0}</value>
