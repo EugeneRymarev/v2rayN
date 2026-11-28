@@ -224,7 +224,7 @@ public static class WarpService
         var account = config.WarpItem;
         if (WarpMasqueService.IsMasque(account))
         {
-            return new RetResult(false, ResUI.MsgWarpMasqueNoScan);
+            return await WarpMasqueService.SelectEndpointAsync(config);
         }
         if (account == null || !HasAccount(account))
         {
@@ -301,7 +301,12 @@ public static class WarpService
         {
             return [];
         }
-        var host = WarpMasqueService.IsMasque(account) ? WarpMasqueService.GetEndpoint(account) : account.EndpointHost;
+        if (WarpMasqueService.IsMasque(account))
+        {
+            // every candidate, so the address check also bypasses TUN
+            return WarpMasqueService.GetAllEndpoints(account).Select(host => $"{host}/32").ToList();
+        }
+        var host = account.EndpointHost;
         return Utils.IsIpv4(host) ? [$"{host}/32"] : [];
     }
 

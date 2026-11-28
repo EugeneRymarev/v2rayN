@@ -11,6 +11,12 @@ public static class WarpMasqueService
     public const string UsqueVersion = "4.2.1";
     public const string ConfigFileName = "warp-masque.json";
     public const string DefaultEndpointH2 = "162.159.198.2";
+    public const int EndpointPort = 443;
+
+    // Cloudflare MASQUE addresses; some ISPs block one of them, so try each.
+    // Over HTTP/2 only 162.159.198.2 answers: 162.159.198.1 shows another key.
+    public static readonly string[] QuicEndpoints = ["162.159.198.1", "162.159.198.2"];
+    public static readonly string[] Http2Endpoints = [DefaultEndpointH2];
 
     public static string ConfigPath => Utils.GetConfigPath(ConfigFileName);
 
@@ -52,6 +58,87 @@ public static class WarpMasqueService
         return (endpoint, endpointH2);
     }
 
+    // The account's own address first, then the known ones for its transport
+    public static List<string> GetEndpointCandidates(WarpItem? item)
+    {
+        if (item?.Protocol != EWarpProtocol.MasqueHttp2)
+        {
+            return Ipv4Distinct([item?.MasqueEndpoint, .. QuicEndpoints]);
+        }
+        // a QUIC-only address opens over TCP too but fails the key check
+        return Ipv4Distinct([item.MasqueEndpointH2, .. Http2Endpoints])
+            .Where(h => Http2Endpoints.Contains(h) || !QuicEndpoints.Contains(h))
+            .ToList();
+    }
+
+    // Every address usque may dial, for either transport
+    public static List<string> GetAllEndpoints(WarpItem? item)
+    {
+        return Ipv4Distinct([item?.MasqueEndpoint, item?.MasqueEndpointH2, .. QuicEndpoints, .. Http2Endpoints]);
+    }
+
+    private static List<string> Ipv4Distinct(IEnumerable<string?> hosts)
+    {
+        return hosts.Where(Utils.IsIpv4).Select(h => h!).Distinct().ToList();
+    }
+
+    // Points the usque config at the given address for one transport, keeping the rest as is
+    public static string? SetUsqueEndpoint(string? json, EWarpProtocol protocol, string endpoint)
+    {
+        if (JsonUtils.ParseJson(json ?? string.Empty) is not JsonObject root)
+        {
+            return null;
+        }
+        root[protocol == EWarpProtocol.MasqueHttp2 ? "endpoint_h2_v4" : "endpoint_v4"] = endpoint;
+        return root.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
+    }
+
+    public static void SetEndpoint(WarpItem item, string endpoint)
+    {
+        if (item.Protocol == EWarpProtocol.MasqueHttp2)
+        {
+            item.MasqueEndpointH2 = endpoint;
+        }
+        else
+        {
+            item.MasqueEndpoint = endpoint;
+        }
+    }
+
+    // A TCP connect to port 443 tells whether the ISP lets the address through
+    public static async Task<WarpEndpointResult?> FindOpenEndpointAsync(IEnumerable<string> candidates, int port = EndpointPort, int timeoutMs = 3000)
+    {
+        var results = await Task.WhenAll(candidates.Select(host => ProbeAsync(host, port, timeoutMs)));
+        return results.Where(r => r != null).OrderBy(r => r!.RttMs).FirstOrDefault();
+    }
+
+    // Moves the account to the fastest Cloudflare address the ISP lets through
+    public static async Task<RetResult> SelectEndpointAsync(Config config)
+    {
+        var item = config.WarpItem;
+        if (item == null || !HasAccount(item) || !File.Exists(ConfigPath))
+        {
+            return new RetResult(false, ResUI.MsgWarpNoAccount);
+        }
+        var best = await FindOpenEndpointAsync(GetEndpointCandidates(item));
+        if (best == null)
+        {
+            return new RetResult(false, item.Protocol == EWarpProtocol.MasqueHttp2 ? ResUI.MsgWarpMasqueHttp2Blocked : ResUI.MsgWarpEndpointNotFound);
+        }
+        var json = SetUsqueEndpoint(await File.ReadAllTextAsync(ConfigPath), item.Protocol, best.Host);
+        if (json == null)
+        {
+            return new RetResult(false, ResUI.MsgWarpNoAccount);
+        }
+        await File.WriteAllTextAsync(ConfigPath, json);
+        SetEndpoint(item, best.Host);
+        if (await ConfigTextHandler.SaveConfig() != 0)
+        {
+            return new RetResult(false, ResUI.OperationFailed);
+        }
+        return new RetResult(true, string.Format(ResUI.MsgWarpEndpointSelected, best.Host, best.Port, best.RttMs));
+    }
+
     public static async Task<RetResult> RegisterToConfigAsync(Config config)
     {
         var exe = await EnsureUsqueAsync();
@@ -69,22 +156,36 @@ public static class WarpMasqueService
             return new RetResult(false, ResUI.MsgWarpRegisterFailed);
         }
 
-        var (endpoint, endpointH2) = ParseUsqueConfig(await File.ReadAllTextAsync(tmpPath));
+        var json = await File.ReadAllTextAsync(tmpPath);
+        var (endpoint, endpointH2) = ParseUsqueConfig(json);
         if (endpoint.IsNullOrEmpty())
         {
             File.Delete(tmpPath);
             return new RetResult(false, ResUI.MsgWarpRegisterFailed);
         }
-        File.Move(tmpPath, ConfigPath, true);
 
         config.WarpItem ??= new();
-        config.WarpItem.MasqueEndpoint = endpoint;
-        config.WarpItem.MasqueEndpointH2 = endpointH2;
+        var item = config.WarpItem;
+        item.MasqueEndpoint = endpoint;
+        item.MasqueEndpointH2 = endpointH2;
+
+        // the address Cloudflare hands out may be blocked by the ISP
+        var best = await FindOpenEndpointAsync(GetEndpointCandidates(item));
+        if (best != null && SetUsqueEndpoint(json, item.Protocol, best.Host) is { } updated)
+        {
+            await File.WriteAllTextAsync(tmpPath, updated);
+            SetEndpoint(item, best.Host);
+        }
+        File.Move(tmpPath, ConfigPath, true);
+
         if (await ConfigTextHandler.SaveConfig() != 0)
         {
             return new RetResult(false, ResUI.OperationFailed);
         }
-        return new RetResult(true, ResUI.MsgWarpAccountCreated);
+        var msg = best != null
+            ? $"{ResUI.MsgWarpAccountCreated}. {string.Format(ResUI.MsgWarpEndpointSelected, best.Host, best.Port, best.RttMs)}"
+            : $"{ResUI.MsgWarpAccountCreated}. {ResUI.MsgWarpEndpointNotFound}";
+        return new RetResult(true, msg);
     }
 
     // Returns the usque path, downloading the release on first use
@@ -182,6 +283,22 @@ public static class WarpMasqueService
             return (-1, "timeout");
         }
         return (process.ExitCode, $"{await stdout}{await stderr}");
+    }
+
+    private static async Task<WarpEndpointResult?> ProbeAsync(string host, int port, int timeoutMs)
+    {
+        try
+        {
+            using var client = new TcpClient();
+            using var cts = new CancellationTokenSource(timeoutMs);
+            var sw = Stopwatch.StartNew();
+            await client.ConnectAsync(IPAddress.Parse(host), port, cts.Token);
+            return new WarpEndpointResult(host, port, (int)sw.ElapsedMilliseconds);
+        }
+        catch (Exception ex) when (ex is SocketException or OperationCanceledException)
+        {
+            return null;
+        }
     }
 
     private static string? GetIPv4(JsonNode? node)

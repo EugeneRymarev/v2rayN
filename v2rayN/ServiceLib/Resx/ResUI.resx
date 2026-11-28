@@ -2061,8 +2061,8 @@ The "Get Certificate" action may fail if a self-signed certificate is used or if
   <data name="MsgWarpMasqueDownloadFailed" xml:space="preserve">
     <value>Could not download usque. Put it here by hand: {0}</value>
   </data>
-  <data name="MsgWarpMasqueNoScan" xml:space="preserve">
-    <value>MASQUE does not need an address search</value>
+  <data name="MsgWarpMasqueHttp2Blocked" xml:space="preserve">
+    <value>The HTTP/2 address of WARP is blocked by your provider. Choose MASQUE over UDP</value>
   </data>
   <data name="menuRoutingImportFromClipboard" xml:space="preserve">
     <value>Import Rule Sets from Clipboard</value>

@@ -2043,8 +2043,8 @@
   <data name="MsgWarpMasqueDownloadFailed" xml:space="preserve">
     <value>Не удалось скачать usque. Положите её сюда вручную: {0}</value>
   </data>
-  <data name="MsgWarpMasqueNoScan" xml:space="preserve">
-    <value>Для MASQUE поиск адреса не нужен</value>
+  <data name="MsgWarpMasqueHttp2Blocked" xml:space="preserve">
+    <value>Провайдер закрыл адрес WARP для HTTP/2. Выберите MASQUE через UDP</value>
   </data>
   <data name="menuRoutingImportFromClipboard" xml:space="preserve">
     <value>Импорт наборов правил из буфера обмена</value>

@@ -493,6 +493,74 @@ public class WarpServiceTests
     }
 
     [Test]
+    public async Task Masque_TunExclude_ShouldKeepEveryCandidateOutOfTunnel()
+    {
+        var excluded = WarpService.GetTunExcludeAddresses(SampleMasqueAccount(EWarpMode.All));
+        foreach (var host in WarpMasqueService.QuicEndpoints.Concat(WarpMasqueService.Http2Endpoints))
+        {
+            await excluded.Should().Contain($"{host}/32");
+        }
+        await WarpService.GetTunExcludeAddresses(SampleMasqueAccount(EWarpMode.Off)).Should().BeEmpty();
+    }
+
+    [Test]
+    public async Task Masque_EndpointCandidates_ShouldFollowTransport()
+    {
+        var item = new WarpItem { Protocol = EWarpProtocol.Masque, MasqueEndpoint = "162.159.192.1", MasqueEndpointH2 = "162.159.198.2" };
+        var quic = WarpMasqueService.GetEndpointCandidates(item);
+        await quic[0].Should().BeEqualTo("162.159.192.1");
+        await quic.Should().Contain("162.159.198.1");
+        await quic.Should().Contain("162.159.198.2");
+
+        // 162.159.198.1 accepts TCP but is not an HTTP/2 MASQUE server
+        item.Protocol = EWarpProtocol.MasqueHttp2;
+        item.MasqueEndpointH2 = "162.159.198.1";
+        var h2 = WarpMasqueService.GetEndpointCandidates(item);
+        await h2.Should().BeEquivalentTo(WarpMasqueService.Http2Endpoints);
+    }
+
+    [Test]
+    public async Task Masque_SetUsqueEndpoint_ShouldChangeOnlyThatTransport()
+    {
+        var quic = WarpMasqueService.SetUsqueEndpoint(SampleUsqueConfig, EWarpProtocol.Masque, "162.159.198.9");
+        var (endpoint, endpointH2) = WarpMasqueService.ParseUsqueConfig(quic);
+        await endpoint.Should().BeEqualTo("162.159.198.9");
+        await endpointH2.Should().BeEqualTo("162.159.198.2");
+        await quic!.Should().Contain("\"private_key\": \"secret\"");
+
+        var h2 = WarpMasqueService.SetUsqueEndpoint(SampleUsqueConfig, EWarpProtocol.MasqueHttp2, "162.159.198.1");
+        (endpoint, endpointH2) = WarpMasqueService.ParseUsqueConfig(h2);
+        await endpoint.Should().BeEqualTo("162.159.198.1");
+        await endpointH2.Should().BeEqualTo("162.159.198.1");
+
+        await WarpMasqueService.SetUsqueEndpoint("not json", EWarpProtocol.Masque, "162.159.198.1").Should().BeNull();
+    }
+
+    [Test]
+    public async Task Masque_FindOpenEndpoint_ShouldSkipClosedAddress()
+    {
+        var listener = new TcpListener(IPAddress.Loopback, 0);
+        listener.Start();
+        try
+        {
+            var port = ((IPEndPoint)listener.LocalEndpoint).Port;
+            var best = await WarpMasqueService.FindOpenEndpointAsync(["127.0.0.1"], port, 2000);
+            await best.Should().NotBeNull();
+            await best!.Host.Should().BeEqualTo("127.0.0.1");
+        }
+        finally
+        {
+            listener.Stop();
+        }
+
+        var closed = new TcpListener(IPAddress.Loopback, 0);
+        closed.Start();
+        var closedPort = ((IPEndPoint)closed.LocalEndpoint).Port;
+        closed.Stop();
+        await (await WarpMasqueService.FindOpenEndpointAsync(["127.0.0.1"], closedPort, 2000)).Should().BeNull();
+    }
+
+    [Test]
     public async Task Masque_DownloadUrl_ShouldPointToPinnedRelease()
     {
         var url = WarpMasqueService.GetDownloadUrl();
